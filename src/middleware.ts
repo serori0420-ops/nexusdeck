@@ -1,38 +1,14 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-    let supabaseResponse = NextResponse.next({ request })
-
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return request.cookies.getAll()
-                },
-                setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value }) =>
-                        request.cookies.set(name, value)
-                    )
-                    supabaseResponse = NextResponse.next({ request })
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        supabaseResponse.cookies.set(name, value, options)
-                    )
-                },
-            },
-        }
+export function middleware(request: NextRequest) {
+    // Supabase の認証 Cookie を確認（sb-<project>-auth-token）
+    const hasAuthCookie = request.cookies.getAll().some(
+        (cookie) => cookie.name.startsWith('sb-') && cookie.name.includes('-auth-token')
     )
-
-    // セッションのリフレッシュ（重要：getUser で最新のトークンを取得）
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
 
     // 未認証ユーザーを /login にリダイレクト
     if (
-        !user &&
+        !hasAuthCookie &&
         !request.nextUrl.pathname.startsWith('/login') &&
         !request.nextUrl.pathname.startsWith('/auth')
     ) {
@@ -41,7 +17,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
-    return supabaseResponse
+    // 認証済みユーザーが /login にアクセスしたらトップへ
+    if (hasAuthCookie && request.nextUrl.pathname.startsWith('/login')) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
+    }
+
+    return NextResponse.next()
 }
 
 export const config = {
