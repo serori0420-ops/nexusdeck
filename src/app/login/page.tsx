@@ -1,10 +1,13 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
-import { Github } from "lucide-react"
+import { Github, Smartphone, MonitorSmartphone, ArrowRight } from "lucide-react"
 
 export default function LoginPage() {
+    const router = useRouter()
+
     const handleGitHubLogin = async () => {
         await supabase.auth.signInWithOAuth({
             provider: "github",
@@ -33,26 +36,62 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                {/* Login Card */}
-                <div className="rounded-2xl border border-border/60 bg-card/80 p-6 shadow-xl backdrop-blur-sm">
-                    <h2 className="mb-1 text-center text-lg font-semibold">ログイン</h2>
-                    <p className="mb-6 text-center text-xs text-muted-foreground">
-                        アカウントでサインインしてください
-                    </p>
+                {/* Mode Selection */}
+                <div className="space-y-3">
+                    {/* Cloud Sync Mode */}
+                    <div className="rounded-2xl border border-border/60 bg-card/80 p-5 shadow-xl backdrop-blur-sm">
+                        <div className="mb-3 flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                                <MonitorSmartphone className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-semibold">クラウド同期モード</h2>
+                                <p className="text-[11px] text-muted-foreground">
+                                    PC・スマホで設定を共有
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            className="w-full gap-3 h-10 text-sm font-medium"
+                            onClick={handleGitHubLogin}
+                        >
+                            <Github className="h-4 w-4" />
+                            GitHubでログイン
+                        </Button>
+                    </div>
 
-                    <Button
-                        className="w-full gap-3 h-11 text-sm font-medium"
-                        onClick={handleGitHubLogin}
-                    >
-                        <Github className="h-5 w-5" />
-                        GitHubでログイン
-                    </Button>
+                    {/* Divider */}
+                    <div className="flex items-center gap-3">
+                        <div className="h-px flex-1 bg-border/60" />
+                        <span className="text-[11px] text-muted-foreground/60">または</span>
+                        <div className="h-px flex-1 bg-border/60" />
+                    </div>
 
-                    <p className="mt-6 text-center text-[11px] text-muted-foreground/60">
-                        ログインすると、設定がクラウドに保存され
-                        <br />
-                        どのデバイスからでもアクセスできます
-                    </p>
+                    {/* Local Mode */}
+                    <div className="rounded-2xl border border-border/40 bg-card/40 p-5 backdrop-blur-sm">
+                        <div className="mb-3 flex items-center gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50">
+                                <Smartphone className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-semibold">ローカルモード</h2>
+                                <p className="text-[11px] text-muted-foreground">
+                                    このデバイスだけで使う
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="outline"
+                            className="w-full gap-2 h-10 text-sm"
+                            onClick={() => router.push("/")}
+                        >
+                            ログインせずに使う
+                            <ArrowRight className="h-3.5 w-3.5" />
+                        </Button>
+                        <p className="mt-2.5 text-center text-[10px] text-muted-foreground/50">
+                            設定はこのブラウザにのみ保存されます
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
