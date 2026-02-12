@@ -3,6 +3,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { SourceManager } from "@/components/feed/source-manager";
 import { BookmarkPanel } from "@/components/feed/bookmark-panel";
 import { TutorialModal } from "@/components/tutorial-modal";
+import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
 import { Settings2, HelpCircle } from "lucide-react";
 
@@ -32,6 +33,7 @@ export default function Home() {
           } />
           <BookmarkPanel />
           <ThemeToggle />
+          <UserMenu />
         </div>
       </header>
       <FeedContainer />

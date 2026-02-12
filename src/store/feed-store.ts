@@ -270,16 +270,19 @@ export const useFeedStore = create<FeedStore>()(
                 get().syncToCloud()
             },
 
-            // Cloud Sync Implementation
+            // Cloud Sync Implementation（ユーザーID対応）
             loadFromCloud: async () => {
                 try {
+                    const { data: { user } } = await supabase.auth.getUser()
+                    if (!user) return
+
                     const { data, error } = await supabase
                         .from('user_settings')
                         .select('*')
-                        .eq('id', 'default')
+                        .eq('user_id', user.id)
                         .single()
 
-                    if (error) throw error
+                    if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows
                     if (data) {
                         set({
                             columns: data.columns as FeedColumnConfig[],
@@ -294,8 +297,11 @@ export const useFeedStore = create<FeedStore>()(
             syncToCloud: async () => {
                 const state = get()
                 try {
+                    const { data: { user } } = await supabase.auth.getUser()
+                    if (!user) return
+
                     await supabase.from('user_settings').upsert({
-                        id: 'default',
+                        user_id: user.id,
                         columns: state.columns,
                         bookmarks: state.bookmarks,
                         view_mode: state.viewMode,
