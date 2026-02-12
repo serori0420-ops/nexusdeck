@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Article } from '@/components/feed/feed-card'
+import { supabase } from '@/lib/supabase'
 
 export interface FeedColumnConfig {
     id: string
@@ -195,6 +196,9 @@ interface FeedStore {
     removeColumn: (id: string) => void
     reorderColumns: (activeId: string, overId: string) => void
     clearColumns: () => void
+    // Cloud Sync
+    loadFromCloud: () => Promise<void>
+    syncToCloud: () => Promise<void>
 }
 
 export const useFeedStore = create<FeedStore>()(
@@ -202,21 +206,28 @@ export const useFeedStore = create<FeedStore>()(
         (set, get) => ({
             columns: [],
             viewMode: 'card',
-            setViewMode: (mode) => set({ viewMode: mode }),
+            setViewMode: (mode) => {
+                set({ viewMode: mode })
+                get().syncToCloud()
+            },
             bookmarks: [],
-            addBookmark: (article) =>
+            isBookmarked: (articleId) => get().bookmarks.some((b) => b.id === articleId),
+            addBookmark: (article) => {
                 set((state) => {
                     if (state.bookmarks.some((b) => b.id === article.id)) return state;
                     return { bookmarks: [article, ...state.bookmarks] };
-                }),
-            removeBookmark: (articleId) =>
+                })
+                get().syncToCloud()
+            },
+            removeBookmark: (articleId) => {
                 set((state) => ({
                     bookmarks: state.bookmarks.filter((b) => b.id !== articleId),
-                })),
-            isBookmarked: (articleId) => get().bookmarks.some((b) => b.id === articleId),
+                }))
+                get().syncToCloud()
+            },
             isInitialized: false,
             setInitialized: (val) => set({ isInitialized: val }),
-            addColumn: (column: Omit<FeedColumnConfig, 'id'> & { id?: string }) =>
+            addColumn: (column: Omit<FeedColumnConfig, 'id'> & { id?: string }) => {
                 set((state) => {
                     if (state.columns.some((c) => c.url === column.url)) {
                         return state
@@ -230,12 +241,16 @@ export const useFeedStore = create<FeedStore>()(
                             },
                         ],
                     }
-                }),
-            removeColumn: (id) =>
+                })
+                get().syncToCloud()
+            },
+            removeColumn: (id) => {
                 set((state) => ({
                     columns: state.columns.filter((c) => c.id !== id),
-                })),
-            reorderColumns: (activeId, overId) =>
+                }))
+                get().syncToCloud()
+            },
+            reorderColumns: (activeId, overId) => {
                 set((state) => {
                     const oldIndex = state.columns.findIndex((c) => c.id === activeId)
                     const newIndex = state.columns.findIndex((c) => c.id === overId)
@@ -244,8 +259,49 @@ export const useFeedStore = create<FeedStore>()(
                     const [removed] = newColumns.splice(oldIndex, 1)
                     newColumns.splice(newIndex, 0, removed)
                     return { columns: newColumns }
-                }),
-            clearColumns: () => set({ columns: [] }),
+                })
+                get().syncToCloud()
+            },
+            clearColumns: () => {
+                set({ columns: [] })
+                get().syncToCloud()
+            },
+
+            // Cloud Sync Implementation
+            loadFromCloud: async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('user_settings')
+                        .select('*')
+                        .eq('id', 'default')
+                        .single()
+
+                    if (error) throw error
+                    if (data) {
+                        set({
+                            columns: data.columns as FeedColumnConfig[],
+                            bookmarks: data.bookmarks as Article[],
+                            viewMode: (data.view_mode as 'card' | 'compact' | 'gallery') || 'card',
+                        })
+                    }
+                } catch (e) {
+                    console.error('Failed to load from cloud:', e)
+                }
+            },
+            syncToCloud: async () => {
+                const state = get()
+                try {
+                    await supabase.from('user_settings').upsert({
+                        id: 'default',
+                        columns: state.columns,
+                        bookmarks: state.bookmarks,
+                        view_mode: state.viewMode,
+                        updated_at: new Date().toISOString(),
+                    })
+                } catch (e) {
+                    console.error('Failed to sync to cloud:', e)
+                }
+            },
         }),
         {
             name: 'nexusdeck-store',
