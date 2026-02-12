@@ -10,27 +10,46 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, User } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { LogIn, LogOut, User } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 export function UserMenu() {
     const [user, setUser] = useState<SupabaseUser | null>(null)
+    const [loading, setLoading] = useState(true)
     const router = useRouter()
 
     useEffect(() => {
         supabase.auth.getUser().then(({ data }) => {
             setUser(data.user)
+            setLoading(false)
         })
     }, [])
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
-        router.push("/login")
+        setUser(null)
         router.refresh()
     }
 
-    if (!user) return null
+    if (loading) return null
 
+    // 未ログイン時：ログインボタンを表示
+    if (!user) {
+        return (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 h-8 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => router.push("/login")}
+            >
+                <LogIn className="h-4 w-4" />
+                ログイン
+            </Button>
+        )
+    }
+
+    // ログイン済み：アバター＋ドロップダウン
     const avatarUrl = user.user_metadata?.avatar_url
     const displayName = user.user_metadata?.user_name || user.email || "User"
 
