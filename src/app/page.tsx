@@ -2,8 +2,9 @@ import { FeedContainer } from "@/components/feed/feed-container";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SourceManager } from "@/components/feed/source-manager";
 import { BookmarkPanel } from "@/components/feed/bookmark-panel";
+import { TutorialModal } from "@/components/tutorial-modal";
 import { Button } from "@/components/ui/button";
-import { Settings2 } from "lucide-react";
+import { Settings2, HelpCircle } from "lucide-react";
 
 import { ViewModeToggle } from "@/components/feed/view-mode-toggle";
 
@@ -19,6 +20,11 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-3">
           <ViewModeToggle />
+          <TutorialModal trigger={
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground" aria-label="使い方">
+              <HelpCircle className="h-5 w-5" />
+            </Button>
+          } />
           <SourceManager trigger={
             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
               <Settings2 className="h-5 w-5" />

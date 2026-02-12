@@ -15,7 +15,6 @@ import { FeedColumn } from "./feed-column"
 import { SourceManager } from "./source-manager"
 import { useFeedStore } from "@/store/feed-store"
 import { Plus } from "lucide-react"
-import { Button } from "../ui/button"
 
 export function FeedContainer() {
     const columns = useFeedStore((s) => s.columns)

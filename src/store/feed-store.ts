@@ -199,6 +199,9 @@ interface FeedStore {
     // Cloud Sync
     loadFromCloud: () => Promise<void>
     syncToCloud: () => Promise<void>
+    // System
+    hasSeenTutorial: boolean
+    setHasSeenTutorial: (val: boolean) => void
 }
 
 export const useFeedStore = create<FeedStore>()(
@@ -302,6 +305,10 @@ export const useFeedStore = create<FeedStore>()(
                     console.error('Failed to sync to cloud:', e)
                 }
             },
+
+            // System
+            hasSeenTutorial: false,
+            setHasSeenTutorial: (val) => set({ hasSeenTutorial: val }),
         }),
         {
             name: 'nexusdeck-store',
@@ -309,6 +316,7 @@ export const useFeedStore = create<FeedStore>()(
                 columns: state.columns,
                 bookmarks: state.bookmarks,
                 viewMode: state.viewMode,
+                hasSeenTutorial: state.hasSeenTutorial,
             }),
         }
     )
