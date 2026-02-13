@@ -21,7 +21,7 @@ export function BookmarkPanel() {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground relative"
+                    className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground relative shrink-0"
                 >
                     <Bookmark className="h-5 w-5" />
                     {bookmarks.length > 0 && (

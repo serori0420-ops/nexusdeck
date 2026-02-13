@@ -17,22 +17,26 @@ export default function Home() {
           <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
             <span className="text-primary-foreground font-bold text-sm">N</span>
           </div>
-          <h1 className="text-lg font-semibold tracking-tight hidden sm:block">NexusDeck</h1>
+          <h1 className="text-lg font-semibold tracking-tight">NexusDeck</h1>
         </div>
-        <div className="flex items-center gap-1 sm:gap-3 overflow-x-auto no-scrollbar">
+
+        <div className="flex-1 overflow-x-auto no-scrollbar mx-2 flex items-center justify-end sm:justify-end gap-1 sm:gap-3 px-1">
           <ViewModeToggle />
           <TutorialModal trigger={
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground" aria-label="使い方">
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground shrink-0" aria-label="使い方">
               <HelpCircle className="h-5 w-5" />
             </Button>
           } />
           <SourceManager trigger={
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground shrink-0">
               <Settings2 className="h-5 w-5" />
             </Button>
           } />
           <BookmarkPanel />
           <ThemeToggle />
+        </div>
+
+        <div className="shrink-0">
           <UserMenu />
         </div>
       </header>
