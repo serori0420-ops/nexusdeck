@@ -82,8 +82,12 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
                     <GripVertical className="h-3.5 w-3.5" />
                 </button>
 
-                <div className="flex items-center gap-2 flex-1 ml-1.5">
-                    <h2 className="text-sm font-semibold tracking-tight truncate">{title}</h2>
+                <div className="flex items-center gap-2 flex-1 ml-1.5 min-w-0">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <h2 className="text-sm font-semibold tracking-tight truncate" title={title}>
+                            {title}
+                        </h2>
+                    </div>
                     {!isLoading && !error && (
                         <span className="text-[10px] font-medium text-muted-foreground bg-muted/80 px-1.5 py-0.5 rounded-md tabular-nums shrink-0">
                             {articles.length}
