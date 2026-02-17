@@ -139,8 +139,8 @@
    Scrollbar — Subtle, blending into the background
    ================================================================ */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -148,12 +148,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.5 0 0 / 0.15);
+  background: oklch(0.5 0 0 / 0.3);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.5 0 0 / 0.3);
+  background: oklch(0.5 0 0 / 0.5);
 }
 
 ::-webkit-scrollbar-corner {
