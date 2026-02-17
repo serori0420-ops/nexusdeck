@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { FeedCard, Article } from "./feed-card"
 import useSWR from "swr"
@@ -66,49 +66,66 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
     });
 
     // Pull to Refresh State
-    const [startY, setStartY] = useState(0)
     const [pullDistance, setPullDistance] = useState(0)
-    const [isPulling, setIsPulling] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
-    const scrollRef = useState<HTMLDivElement | null>(null)[1] // Logic handled via event target usually, but let's use a ref or target
+    const touchStart = useRef({ x: 0, y: 0 })
+    const isVertical = useRef<boolean | null>(null)
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
         if (e.currentTarget.scrollTop === 0) {
-            setStartY(e.touches[0].clientY)
-            setIsPulling(true)
+            touchStart.current = {
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY
+            }
+            isVertical.current = null
         }
     }
 
     const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-        if (!isPulling) return
         const currentY = e.touches[0].clientY
-        const diff = currentY - startY
+        const currentX = e.touches[0].clientX
+        const diffY = currentY - touchStart.current.y
+        const diffX = currentX - touchStart.current.x
 
-        if (diff > 0 && e.currentTarget.scrollTop === 0) {
-            // Visualize resistance
-            setPullDistance(Math.min(diff * 0.4, 120)) // max 120px visual pull
+        // Lock direction on first significant move
+        if (isVertical.current === null) {
+            // Wait for some movement to decide
+            if (Math.abs(diffY) > 5 || Math.abs(diffX) > 5) {
+                isVertical.current = Math.abs(diffY) > Math.abs(diffX)
+                // If established as horizontal, verify we don't block it (implied by return)
+            }
+        }
+
+        // If not vertical (horizontal), or not near top, or pushing up -> Ignore
+        if (isVertical.current === false || diffY < 0) {
+            return
+        }
+
+        // Only logic for vertical pull at scrollTop 0
+        if (e.currentTarget.scrollTop === 0 && diffY > 0) {
+            setPullDistance(Math.min(diffY * 0.4, 120))
         } else {
             setPullDistance(0)
         }
     }
 
     const handleTouchEnd = async () => {
-        if (!isPulling) return
-        setIsPulling(false)
+        // Reset refs
+        isVertical.current = null
 
-        if (pullDistance > 60) { // Threshold to trigger refresh
+        if (pullDistance > 60) {
             setIsRefreshing(true)
-            setPullDistance(60) // Keep it visible while refreshing
+            setPullDistance(60)
             try {
                 await mutate()
             } finally {
                 setTimeout(() => {
                     setIsRefreshing(false)
                     setPullDistance(0)
-                }, 500) // Minimum visibility for UX
+                }, 500)
             }
         } else {
-            setPullDistance(0) // Snap back
+            setPullDistance(0)
         }
     }
 
