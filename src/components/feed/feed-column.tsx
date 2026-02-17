@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { FeedCard, Article } from "./feed-card"
 import useSWR from "swr"
@@ -64,6 +65,53 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
         return !isAd;
     });
 
+    // Pull to Refresh State
+    const [startY, setStartY] = useState(0)
+    const [pullDistance, setPullDistance] = useState(0)
+    const [isPulling, setIsPulling] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
+    const scrollRef = useState<HTMLDivElement | null>(null)[1] // Logic handled via event target usually, but let's use a ref or target
+
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (e.currentTarget.scrollTop === 0) {
+            setStartY(e.touches[0].clientY)
+            setIsPulling(true)
+        }
+    }
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (!isPulling) return
+        const currentY = e.touches[0].clientY
+        const diff = currentY - startY
+
+        if (diff > 0 && e.currentTarget.scrollTop === 0) {
+            // Visualize resistance
+            setPullDistance(Math.min(diff * 0.4, 120)) // max 120px visual pull
+        } else {
+            setPullDistance(0)
+        }
+    }
+
+    const handleTouchEnd = async () => {
+        if (!isPulling) return
+        setIsPulling(false)
+
+        if (pullDistance > 60) { // Threshold to trigger refresh
+            setIsRefreshing(true)
+            setPullDistance(60) // Keep it visible while refreshing
+            try {
+                await mutate()
+            } finally {
+                setTimeout(() => {
+                    setIsRefreshing(false)
+                    setPullDistance(0)
+                }, 500) // Minimum visibility for UX
+            }
+        } else {
+            setPullDistance(0) // Snap back
+        }
+    }
+
     return (
         <div
             ref={setNodeRef}
@@ -101,7 +149,7 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
                         className="p-1 rounded-md text-muted-foreground/30 hover:text-foreground hover:bg-accent transition-all duration-200"
                         aria-label="更新"
                     >
-                        <RefreshCw className="h-3 w-3" />
+                        <RefreshCw className={`h-3 w-3 ${isRefreshing || isLoading ? "animate-spin" : ""}`} />
                     </button>
                     <button
                         onClick={() => removeColumn(id)}
@@ -113,10 +161,35 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto w-full">
-                <div className="flex flex-col gap-2 p-3">
-                    {isLoading &&
+            {/* Content with Pull to Refresh */}
+            <div
+                className="flex-1 min-h-0 overflow-y-auto w-full overscroll-contain relative"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
+                {/* Refresh Indicator */}
+                <div
+                    className="absolute top-0 left-0 w-full flex items-center justify-center pointer-events-none transition-all duration-300"
+                    style={{
+                        height: `${pullDistance}px`,
+                        opacity: pullDistance > 0 ? 1 : 0,
+                    }}
+                >
+                    <RefreshCw
+                        className={`h-5 w-5 text-primary ${isRefreshing ? "animate-spin" : ""}`}
+                        style={{
+                            transform: `rotate(${pullDistance * 2}deg)`,
+                            opacity: Math.min(pullDistance / 40, 1)
+                        }}
+                    />
+                </div>
+
+                <div
+                    className="flex flex-col gap-2 p-3 transition-transform duration-300 ease-out"
+                    style={{ transform: `translateY(${pullDistance}px)` }}
+                >
+                    {isLoading && !isRefreshing &&
                         Array.from({ length: 6 }).map((_, i) => (
                             <div key={i} className="rounded-xl border border-border/50 p-4 space-y-3">
                                 <div className="flex justify-between">
