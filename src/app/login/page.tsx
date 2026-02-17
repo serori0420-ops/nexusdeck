@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
@@ -7,6 +8,15 @@ import { Github, Smartphone, MonitorSmartphone, ArrowRight } from "lucide-react"
 
 export default function LoginPage() {
     const router = useRouter()
+
+    useEffect(() => {
+        // すでにログイン済みならトップへ
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                router.replace("/")
+            }
+        })
+    }, [router])
 
     const handleGitHubLogin = async () => {
         await supabase.auth.signInWithOAuth({

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import {
     DropdownMenu,
@@ -38,13 +39,12 @@ export function UserMenu() {
     if (!user) {
         return (
             <Button
-                variant="ghost"
-                size="sm"
-                className="gap-2 h-8 text-xs text-muted-foreground hover:text-foreground"
+                variant="default"
+                className="gap-2 cursor-pointer shadow-sm touch-manipulation"
                 onClick={() => router.push("/login")}
             >
                 <LogIn className="h-4 w-4" />
-                ログイン
+                <span className="hidden sm:inline">ログイン</span>
             </Button>
         )
     }

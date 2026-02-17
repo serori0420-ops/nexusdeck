@@ -6,12 +6,8 @@ export function middleware(request: NextRequest) {
         (cookie) => cookie.name.startsWith('sb-') && cookie.name.includes('-auth-token')
     )
 
-    // 認証済みユーザーが /login にアクセスしたらトップへリダイレクト
-    if (hasAuthCookie && request.nextUrl.pathname.startsWith('/login')) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/'
-        return NextResponse.redirect(url)
-    }
+    // 認証済みユーザーが /login にアクセスした場合のリダイレクト処理は削除
+    // (クライアント側の状態と不整合が起きると無限ループやログイン不能になるため)
 
     // 未認証でもアプリは使える（localStorage で動作）
     return NextResponse.next()

@@ -12,15 +12,15 @@ import { ViewModeToggle } from "@/components/feed/view-mode-toggle";
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col overflow-hidden bg-background">
-      <header className="w-full h-14 border-b border-border/60 flex items-center justify-between px-5 bg-card/80 backdrop-blur-md z-50 shrink-0">
-        <div className="flex items-center gap-3 shrink-0">
+      <header className="w-full h-14 border-b border-border/60 flex items-center justify-between px-3 sm:px-5 bg-card/80 backdrop-blur-md z-50 shrink-0 relative">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 relative z-20">
           <div className="h-7 w-7 rounded-lg bg-primary flex items-center justify-center shrink-0">
             <span className="text-primary-foreground font-bold text-sm">N</span>
           </div>
-          <h1 className="text-lg font-semibold tracking-tight">NexusDeck</h1>
+          <h1 className="text-base sm:text-lg font-semibold tracking-tight">NexusDeck</h1>
         </div>
 
-        <div className="flex-1 overflow-x-auto no-scrollbar mx-2 flex items-center justify-end sm:justify-end gap-1 sm:gap-3 px-1">
+        <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar mx-2 flex items-center justify-end sm:justify-end gap-1 sm:gap-3 px-1 relative z-10">
           <ViewModeToggle />
           <TutorialModal trigger={
             <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground shrink-0" aria-label="使い方">
@@ -36,7 +36,7 @@ export default function Home() {
           <ThemeToggle />
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 relative z-50">
           <UserMenu />
         </div>
       </header>
