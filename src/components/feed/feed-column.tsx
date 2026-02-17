@@ -133,7 +133,7 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
         <div
             ref={setNodeRef}
             style={style}
-            className={`flex flex-col h-full w-[340px] min-w-[340px] bg-background border-r border-border/30 ${isDragging ? "opacity-50 z-50" : ""} ${className}`}
+            className={`flex flex-col h-full w-[340px] min-w-[340px] snap-center bg-background border-r border-border/30 ${isDragging ? "opacity-50 z-50" : ""} ${className}`}
         >
             {/* Column Header */}
             <div className="px-3 py-2.5 flex items-center justify-between shrink-0 border-b border-border/40 group">
@@ -180,7 +180,8 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
 
             {/* Content with Pull to Refresh */}
             <div
-                className="flex-1 min-h-0 overflow-y-auto w-full overscroll-contain relative"
+                className="flex-1 min-h-0 overflow-y-auto w-full overscroll-y-contain relative"
+                style={{ touchAction: "pan-x pan-y" }}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
