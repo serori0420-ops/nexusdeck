@@ -50,7 +50,7 @@ export const PRESET_SOURCES = [
         title: 'Google Cloud Blog',
         description: 'Google Cloudの最新アップデートと導入事例（日本語版）',
         sourceName: 'Google Cloud',
-        url: 'https://cloud.google.com/blog/ja/rss',
+        url: 'https://cloudblog.withgoogle.com/ja/rss/',
         category: '国内'
     },
     // 海外 Tech
