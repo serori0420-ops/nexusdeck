@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { ExternalLink, Bookmark } from "lucide-react"
+import { ExternalLink, Bookmark, FileDown, Loader2 } from "lucide-react"
 import dayjs from "dayjs"
 import { useFeedStore } from "@/store/feed-store"
 
@@ -32,6 +33,66 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
             removeBookmark(article.id)
         } else {
             addBookmark(article)
+        }
+    }
+
+    // Markdownダウンロード/共有の状態管理
+    const [isExtracting, setIsExtracting] = useState(false)
+
+    const handleExtractMd = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (isExtracting) return
+        setIsExtracting(true)
+
+        try {
+            const res = await fetch(
+                `/api/extract?url=${encodeURIComponent(article.url)}&title=${encodeURIComponent(article.title)}`
+            )
+            const data = await res.json()
+
+            if (!res.ok || !data.markdown) {
+                alert(data.error || '本文の抽出に失敗しました')
+                return
+            }
+
+            // ファイル名のサニタイズ（使えない記号を除く）
+            const safeTitle = (data.title || article.title)
+                .replace(/[\\/:*?"<>|]/g, '_')
+                .substring(0, 100)
+            const fileName = `${safeTitle}.md`
+
+            // モバイル判定：Web Share APIが使えるならシェアメニューを優先
+            const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+            if (isMobile && navigator.share) {
+                try {
+                    await navigator.share({
+                        title: data.title || article.title,
+                        text: data.markdown,
+                    })
+                    return
+                } catch (shareErr) {
+                    // キャンセルされた場合はダウンロードにフォールバック
+                    if ((shareErr as Error).name === 'AbortError') return
+                }
+            }
+
+            // PC / フォールバック: Blobでダウンロード
+            const blob = new Blob([data.markdown], { type: 'text/markdown;charset=utf-8' })
+            const blobUrl = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = blobUrl
+            a.download = fileName
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(blobUrl)
+        } catch (err) {
+            console.error('MD extraction failed:', err)
+            alert('Markdownの生成に失敗しました。しばらくしてから再度お試しください。')
+        } finally {
+            setIsExtracting(false)
         }
     }
 
@@ -78,17 +139,31 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                     </div>
                 </div>
 
-                {/* Bookmark button */}
-                <button
-                    onClick={handleBookmark}
-                    className={`shrink-0 p-1 rounded-md transition-colors ${bookmarked
-                        ? 'text-primary'
-                        : 'text-muted-foreground/40 hover:text-primary'
-                        }`}
-                    aria-label={bookmarked ? 'ブックマーク解除' : 'あとで読む'}
-                >
-                    <Bookmark className={`h-3.5 w-3.5 ${bookmarked ? 'fill-current' : ''}`} />
-                </button>
+                {/* Bookmark & MD Download buttons */}
+                <div className="flex items-center gap-0.5 shrink-0">
+                    <button
+                        onClick={handleBookmark}
+                        className={`p-1 rounded-md transition-colors ${bookmarked
+                            ? 'text-primary'
+                            : 'text-muted-foreground/40 hover:text-primary'
+                            }`}
+                        aria-label={bookmarked ? 'ブックマーク解除' : 'あとで読む'}
+                    >
+                        <Bookmark className={`h-3.5 w-3.5 ${bookmarked ? 'fill-current' : ''}`} />
+                    </button>
+                    <button
+                        onClick={handleExtractMd}
+                        className="p-1 rounded-md text-muted-foreground/40 hover:text-primary transition-colors"
+                        aria-label="Markdownで保存"
+                        title="Markdownで保存"
+                        disabled={isExtracting}
+                    >
+                        {isExtracting
+                            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            : <FileDown className="h-3.5 w-3.5" />
+                        }
+                    </button>
+                </div>
             </a>
         );
     }
@@ -154,6 +229,19 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                             aria-label={bookmarked ? 'ブックマーク解除' : 'あとで読む'}
                         >
                             <Bookmark className={`h-3.5 w-3.5 ${bookmarked ? 'fill-current' : ''}`} />
+                        </button>
+                        {/* MD Download button */}
+                        <button
+                            onClick={handleExtractMd}
+                            className="p-1 rounded-md text-muted-foreground/40 hover:text-primary transition-all duration-200"
+                            aria-label="Markdownで保存"
+                            title="Markdownで保存"
+                            disabled={isExtracting}
+                        >
+                            {isExtracting
+                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                : <FileDown className="h-3.5 w-3.5" />
+                            }
                         </button>
                         <span className="text-[11px] text-muted-foreground tabular-nums">
                             {dayjs(article.publishedAt).format("MM/DD HH:mm")}
