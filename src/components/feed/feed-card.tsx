@@ -47,7 +47,7 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
 
         try {
             const res = await fetch(
-                `/api/extract?url=${encodeURIComponent(article.url)}&title=${encodeURIComponent(article.title)}`
+                `/api/extract?url=${encodeURIComponent(article.url)}&title=${encodeURIComponent(article.title)}&date=${encodeURIComponent(article.publishedAt || '')}`
             )
             const data = await res.json()
 
@@ -56,11 +56,8 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                 return
             }
 
-            // ファイル名のサニタイズ（使えない記号を除く）
-            const safeTitle = (data.title || article.title)
-                .replace(/[\\/:*?"<>|]/g, '_')
-                .substring(0, 100)
-            const fileName = `${safeTitle}.md`
+            // APIから返されるファイル名を使用（YYYY-MM-DD_タイトル.md）
+            const fileName = data.suggestedFileName || `${article.title}.md`
 
             // モバイル判定：Web Share APIが使えるならシェアメニューを優先
             const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)

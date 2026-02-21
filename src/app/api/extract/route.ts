@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const url = searchParams.get('url');
     const title = searchParams.get('title') || '';
+    const publishedAt = searchParams.get('date') || ''; // 記事の公開日
 
     if (!url) {
         return NextResponse.json({ error: 'URLパラメータが必要です' }, { status: 400 });
@@ -82,12 +83,18 @@ export async function GET(request: NextRequest) {
         // Frontmatter（メタデータ）を付加
         const articleTitle = title || article.title || 'Untitled';
         const now = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        // 記事の公開日（クエリパラメータから取得）
+        const articleDate = publishedAt ? publishedAt.split('T')[0] : '';
 
         const markdown = [
             '---',
             `title: "${articleTitle.replace(/"/g, '\\"')}"`,
             `source: "${url}"`,
             `clipped: ${now}`,
+            `date: ${articleDate}`,
+            'interest-level: ',
+            'tags: ',
+            'summary: ',
             '---',
             '',
             `# ${articleTitle}`,
@@ -97,9 +104,14 @@ export async function GET(request: NextRequest) {
             markdownBody,
         ].join('\n');
 
+        // ファイル名提案: YYYY-MM-DD_タイトル.md
+        const safeTitle = articleTitle.replace(/[\\/:*?"<>|]/g, '_').substring(0, 100);
+        const suggestedFileName = `${now}_${safeTitle}.md`;
+
         return NextResponse.json({
             title: articleTitle,
             markdown,
+            suggestedFileName,
         });
     } catch (error) {
         console.error('Extract API Error:', error);
