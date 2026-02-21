@@ -43,7 +43,17 @@ X Pro (旧TweetDeck) スタイルの横スクロール型ニュースリーダ�
 - **UI表示**: 既読になった記事はタイトルの文字色が薄くなり（`text-muted-foreground/80`）、未読記事との視覚的区別がつく。
 - **一括既読**: 各カラムのヘッダーにある「✓✓」ボタン（すべて既読にする）で、対象カラムの現在の記事一覧を一括で既読化できる。
 
-### 2-3. 更新機能
+### 2-3. Markdownダウンロード
+- **機能概要**: 気になった記事をワンクリックでMarkdownファイルとして保存できる機能。
+- **抽出処理 (`/api/extract`)**:
+    - 対象記事のURLからHTMLを取得し、`@mozilla/readability` で本文のみをクリーンに抽出。
+    - `turndown` でHTMLをMarkdownに変換し、YAML Frontmatter（タイトル・元URL・取得日）を自動付与。
+- **UI**: 各記事カードに「📥」アイコンを配置。処理中はスピナーが表示される。
+- **デバイス別の挙動**:
+    - **PC**: `.md` ファイルとしてブラウザのダウンロード機能で保存。
+    - **スマホ**: Web Share API（OSの共有メニュー）を呼び出し、Obsidianやメモアプリ等へ直接テキストを転送可能。
+
+### 2-4. 更新機能
 - **自動更新**: 5分ごとにバックグラウンドで再取得（SWR `refreshInterval: 300000`）。
 - **手動更新**: カラムヘッダーの 🔄 ボタンで即時更新（ローディング中はスケルトンUI）。
 - **エラー処理**: 取得失敗時はエラーメッセージと再試行ボタンを表示。
@@ -93,20 +103,26 @@ RSS/AtomフィードのURLを直接指定して追加。
     3. 本文中の `<img>` タグ
     4. OGP画像 (フォールバック)
 
-### 4-2. 状態管理
+### 4-2. 記事本文抽出API (`/api/extract`)
+- **抽出エンジン**: `@mozilla/readability` で広告・ナビゲーションを除去した純粋な本文HTMLを取得。
+- **変換**: `turndown` でHTML→Markdownに変換。Frontmatter（タイトル・元URL・日付）を自動付与。
+- **DOM構築**: `jsdom` を使用し、Node.js環境でReadabilityを実行。
+
+### 4-3. 状態管理
 - **Zustand (`useFeedStore`)**:
-    - カラム設定（ID, タイトル, URL, ソース名）を管理。
-    - 現在はローカルメモリ（リロードでリセット）で動作。
-    - *Future: Supabase等での永続化予定。*
+    - カラム設定、ブックマーク、既読IDリスト、ミュートキーワード、表示モードを管理。
+    - `zustand/persist` でローカルストレージに永続化。
+    - Supabase連携により、ログインユーザーはクラウドにも同期。
 
 ---
 
 ## 5. 技術スタック
-- **Frontend**: Next.js 15 (App Router), React, TypeScript
-- **UI Components**: Shadcn/UI (Radix UI), Tailwind CSS, Lucide React
-- **State Management**: Zustand
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
+- **UI Components**: Shadcn/UI (Radix UI), Tailwind CSS v4, Lucide React
+- **State Management**: Zustand + Supabase (Cloud Sync)
 - **Data Fetching**: SWR
 - **Drag & Drop**: @dnd-kit
+- **Article Extraction**: @mozilla/readability, jsdom, turndown
 - **Utilities**: dayjs, xml2js, clsx
 
 ---
@@ -115,4 +131,5 @@ RSS/AtomフィードのURLを直接指定して追加。
 - [x] **Supabase連携**: ユーザー認証、設定のクラウド保存。
 - [x] **未読管理**: 既読状態のトラッキング。
 - [x] **フィルタリング**: 特定キーワードの除外/強調。
+- [x] **Markdownダウンロード**: Readabilityによる本文抽出とMD変換、PC/スマホ対応。
 - [ ] **高度なAI連携**: Markdown化された本文を活用したカラム単位の分析やサマリー生成。
