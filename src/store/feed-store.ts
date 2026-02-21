@@ -45,6 +45,14 @@ export const PRESET_SOURCES = [
         url: 'https://www.publickey1.jp/atom.xml',
         category: '国内'
     },
+    {
+        id: 'preset-google-cloud-jp',
+        title: 'Google Cloud Blog',
+        description: 'Google Cloudの最新アップデートと導入事例（日本語版）',
+        sourceName: 'Google Cloud',
+        url: 'https://cloud.google.com/blog/ja/rss',
+        category: '国内'
+    },
     // 海外 Tech
     {
         id: 'preset-techcrunch',
