@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { FeedCard, Article } from "./feed-card"
 import useSWR from "swr"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AlertCircle, RefreshCw, X, GripVertical } from "lucide-react"
+import { AlertCircle, RefreshCw, X, GripVertical, CheckCheck } from "lucide-react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useFeedStore } from "@/store/feed-store"
@@ -25,7 +25,7 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
     const apiUrl = url.startsWith('/api/')
         ? url
         : `/api/feed?url=${encodeURIComponent(url)}&source=${encodeURIComponent(sourceName)}`
-    const { removeColumn, viewMode } = useFeedStore()
+    const { removeColumn, viewMode, globalMuteKeywords, markMultipleAsRead } = useFeedStore()
 
     const { data, error, isLoading, mutate } = useSWR<{ articles: Article[] }, any>(
         url ? apiUrl : null,
@@ -55,6 +55,13 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
     // Filter out PR / Ads
     const articles = rawArticles.filter(article => {
         const text = (article.title + (article.summary || "")).toLowerCase();
+
+        // Mute keywords filtering
+        if (globalMuteKeywords.length > 0) {
+            const isMuted = globalMuteKeywords.some(keyword => text.includes(keyword.toLowerCase()));
+            if (isMuted) return false;
+        }
+
         const isAd =
             text.includes("[pr]") ||
             text.includes("【pr】") ||
@@ -161,6 +168,14 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
                 </div>
 
                 <div className="flex items-center gap-0.5">
+                    <button
+                        onClick={() => markMultipleAsRead(articles.map(a => a.id))}
+                        className="p-1 rounded-md text-muted-foreground/30 hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                        aria-label="すべて既読にする"
+                        title="すべて既読にする"
+                    >
+                        <CheckCheck className="h-3.5 w-3.5" />
+                    </button>
                     <button
                         onClick={() => mutate()}
                         className="p-1 rounded-md text-muted-foreground/30 hover:text-foreground hover:bg-accent transition-all duration-200"

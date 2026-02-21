@@ -189,6 +189,13 @@ interface FeedStore {
     addBookmark: (article: Article) => void
     removeBookmark: (articleId: string) => void
     isBookmarked: (articleId: string) => boolean
+    // Read Status
+    readArticleIds: string[]
+    markAsRead: (articleId: string) => void
+    markMultipleAsRead: (articleIds: string[]) => void
+    // Mute keywords
+    globalMuteKeywords: string[]
+    setGlobalMuteKeywords: (keywords: string[]) => void
     // Actions
     setInitialized: (val: boolean) => void
     setViewMode: (mode: 'card' | 'compact' | 'gallery') => void
@@ -211,6 +218,30 @@ export const useFeedStore = create<FeedStore>()(
             viewMode: 'card',
             setViewMode: (mode) => {
                 set({ viewMode: mode })
+                get().syncToCloud()
+            },
+            readArticleIds: [],
+            markAsRead: (articleId) => {
+                set((state) => {
+                    if (state.readArticleIds.includes(articleId)) return state;
+                    return { readArticleIds: [...state.readArticleIds, articleId] };
+                })
+                get().syncToCloud()
+            },
+            markMultipleAsRead: (articleIds) => {
+                set((state) => {
+                    const newIds = articleIds.filter(id => !state.readArticleIds.includes(id));
+                    if (newIds.length === 0) return state;
+                    // 最大1000件程度を保持するロジック（古すぎる既読IDが膨張しないよう制限）
+                    const nextIds = [...state.readArticleIds, ...newIds];
+                    if (nextIds.length > 2000) return { readArticleIds: nextIds.slice(nextIds.length - 2000) };
+                    return { readArticleIds: nextIds };
+                })
+                get().syncToCloud()
+            },
+            globalMuteKeywords: [],
+            setGlobalMuteKeywords: (keywords) => {
+                set({ globalMuteKeywords: keywords })
                 get().syncToCloud()
             },
             bookmarks: [],
@@ -288,6 +319,8 @@ export const useFeedStore = create<FeedStore>()(
                             columns: data.columns as FeedColumnConfig[],
                             bookmarks: data.bookmarks as Article[],
                             viewMode: (data.view_mode as 'card' | 'compact' | 'gallery') || 'card',
+                            readArticleIds: (data.read_article_ids as string[]) || [],
+                            globalMuteKeywords: (data.mute_keywords as string[]) || [],
                         })
                     }
                 } catch (e) {
@@ -305,6 +338,8 @@ export const useFeedStore = create<FeedStore>()(
                         columns: state.columns,
                         bookmarks: state.bookmarks,
                         view_mode: state.viewMode,
+                        read_article_ids: state.readArticleIds,
+                        mute_keywords: state.globalMuteKeywords,
                         updated_at: new Date().toISOString(),
                     })
                 } catch (e) {
@@ -322,6 +357,8 @@ export const useFeedStore = create<FeedStore>()(
                 columns: state.columns,
                 bookmarks: state.bookmarks,
                 viewMode: state.viewMode,
+                readArticleIds: state.readArticleIds,
+                globalMuteKeywords: state.globalMuteKeywords,
                 hasSeenTutorial: state.hasSeenTutorial,
             }),
         }

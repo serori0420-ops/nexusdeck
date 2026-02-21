@@ -21,8 +21,9 @@ interface FeedCardProps {
 }
 
 export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
-    const { addBookmark, removeBookmark, isBookmarked } = useFeedStore()
+    const { addBookmark, removeBookmark, isBookmarked, readArticleIds, markAsRead } = useFeedStore()
     const bookmarked = isBookmarked(article.id)
+    const isRead = readArticleIds.includes(article.id)
 
     const handleBookmark = (e: React.MouseEvent) => {
         e.preventDefault()
@@ -41,6 +42,7 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                 href={article.url}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => markAsRead(article.id)}
                 className="group flex items-start gap-3 rounded-lg border border-border/40 bg-card p-3 transition-colors hover:bg-accent/5 hover:border-primary/20"
             >
                 {/* Optional small thumb for compact mode */}
@@ -62,7 +64,7 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                 )}
 
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium leading-snug text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    <h3 className={`text-sm leading-snug transition-colors line-clamp-2 ${isRead ? 'text-muted-foreground/80 font-normal' : 'text-foreground font-medium group-hover:text-primary'}`}>
                         {article.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -80,8 +82,8 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                 <button
                     onClick={handleBookmark}
                     className={`shrink-0 p-1 rounded-md transition-colors ${bookmarked
-                            ? 'text-primary'
-                            : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:text-primary'
+                        ? 'text-primary'
+                        : 'text-muted-foreground/40 hover:text-primary'
                         }`}
                     aria-label={bookmarked ? 'ブックマーク解除' : 'あとで読む'}
                 >
@@ -97,6 +99,7 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
             href={article.url}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => markAsRead(article.id)}
             className="group block rounded-xl border border-border/50 bg-card p-0 overflow-hidden transition-all duration-200 ease-in-out hover:border-primary/30 hover:bg-accent/5 hover:shadow-sm"
         >
             {/* Image (Top) */}
@@ -145,8 +148,8 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                         <button
                             onClick={handleBookmark}
                             className={`p-1 rounded-md transition-all duration-200 ${bookmarked
-                                    ? 'text-primary'
-                                    : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100 hover:text-primary'
+                                ? 'text-primary'
+                                : 'text-muted-foreground/40 hover:text-primary'
                                 }`}
                             aria-label={bookmarked ? 'ブックマーク解除' : 'あとで読む'}
                         >
@@ -159,7 +162,7 @@ export function FeedCard({ article, viewMode = 'card' }: FeedCardProps) {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-sm font-medium leading-snug text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-3">
+                <h3 className={`text-sm leading-snug transition-colors duration-200 line-clamp-3 ${isRead ? 'text-muted-foreground/80 font-normal' : 'text-foreground font-medium group-hover:text-primary'}`}>
                     {article.title}
                 </h3>
 

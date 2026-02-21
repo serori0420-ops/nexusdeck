@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Rss } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Rss, X } from "lucide-react"
 import { useFeedStore, PRESET_SOURCES, buildGoogleNewsRssUrl } from "@/store/feed-store"
 
 interface SourceManagerProps {
@@ -30,13 +31,14 @@ export function SourceManager({ open: controlledOpen, onOpenChange: setControlle
     const open = controlledOpen ?? internalOpen
     const setOpen = setControlledOpen ?? setInternalOpen
 
-    const { columns, addColumn, removeColumn, isInitialized, setInitialized } = useFeedStore()
+    const { columns, addColumn, removeColumn, isInitialized, setInitialized, globalMuteKeywords, setGlobalMuteKeywords } = useFeedStore()
 
     // Form states
     const [keyword, setKeyword] = useState("")
     const [columnTitle, setColumnTitle] = useState("")
     const [rssUrl, setRssUrl] = useState("")
     const [rssTitle, setRssTitle] = useState("")
+    const [muteInput, setMuteInput] = useState("")
 
     // Onboarding effect — only for instances without a trigger (auto-open)
     useEffect(() => {
@@ -69,6 +71,19 @@ export function SourceManager({ open: controlledOpen, onOpenChange: setControlle
         setRssTitle("")
         setInitialized(true)
         setOpen(false)
+    }
+
+    const handleAddMuteKeyword = () => {
+        if (!muteInput.trim()) return
+        const newKeyword = muteInput.trim()
+        if (!globalMuteKeywords.includes(newKeyword)) {
+            setGlobalMuteKeywords([...globalMuteKeywords, newKeyword])
+        }
+        setMuteInput("")
+    }
+
+    const handleRemoveMuteKeyword = (keywordToRemove: string) => {
+        setGlobalMuteKeywords(globalMuteKeywords.filter(k => k !== keywordToRemove))
     }
 
     // Toggle preset directly (Immediate action)
@@ -110,7 +125,7 @@ export function SourceManager({ open: controlledOpen, onOpenChange: setControlle
 
                 <Tabs defaultValue="presets" className="flex-1 flex flex-col min-h-0">
                     <div className="px-5 pt-3 shrink-0">
-                        <TabsList className="grid w-full grid-cols-3 h-9 bg-muted/50">
+                        <TabsList className="grid w-full grid-cols-4 h-9 bg-muted/50">
                             <TabsTrigger value="presets" className="text-xs">
                                 プリセット
                             </TabsTrigger>
@@ -119,6 +134,9 @@ export function SourceManager({ open: controlledOpen, onOpenChange: setControlle
                             </TabsTrigger>
                             <TabsTrigger value="rss" className="text-xs">
                                 カスタムRSS
+                            </TabsTrigger>
+                            <TabsTrigger value="mute" className="text-xs">
+                                ミュート
                             </TabsTrigger>
                         </TabsList>
                     </div>
@@ -214,6 +232,46 @@ export function SourceManager({ open: controlledOpen, onOpenChange: setControlle
                             <Button onClick={handleAddByUrl} disabled={!rssUrl.trim()} className="w-full">
                                 追加する
                             </Button>
+                        </div>
+                    </TabsContent>
+
+                    {/* Mute Tab */}
+                    <TabsContent value="mute" className="p-5 outline-none space-y-5 data-[state=inactive]:hidden">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="mute-keyword">ミュートするキーワード</Label>
+                                <div className="flex gap-2">
+                                    <Input
+                                        id="mute-keyword"
+                                        placeholder='例: "PR" や特定企業名'
+                                        value={muteInput}
+                                        onChange={(e) => setMuteInput(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && handleAddMuteKeyword()}
+                                    />
+                                    <Button onClick={handleAddMuteKeyword} disabled={!muteInput.trim()}>
+                                        追加
+                                    </Button>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground">追加したキーワードを含む記事（タイトル・要約）をすべてのカラムで非表示にします。</p>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                {globalMuteKeywords.length === 0 && (
+                                    <p className="text-xs text-muted-foreground">ミュートキーワードは登録されていません</p>
+                                )}
+                                {globalMuteKeywords.map(keyword => (
+                                    <Badge key={keyword} variant="secondary" className="px-2 py-1 flex items-center gap-1">
+                                        {keyword}
+                                        <button
+                                            onClick={() => handleRemoveMuteKeyword(keyword)}
+                                            className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                                            aria-label={`${keyword}のミュートを解除`}
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </button>
+                                    </Badge>
+                                ))}
+                            </div>
                         </div>
                     </TabsContent>
                 </Tabs>
