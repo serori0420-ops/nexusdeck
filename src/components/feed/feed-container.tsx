@@ -32,11 +32,14 @@ export function FeedContainer() {
     const [isMounted, setIsMounted] = useState(false)
 
     const loadFromCloud = useFeedStore((s) => s.loadFromCloud)
+    const isCloudLoaded = useFeedStore((s) => s.isCloudLoaded)
 
     useEffect(() => {
         setIsMounted(true)
-        loadFromCloud()
-    }, [loadFromCloud])
+        if (!isCloudLoaded) {
+            loadFromCloud()
+        }
+    }, [loadFromCloud, isCloudLoaded])
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event

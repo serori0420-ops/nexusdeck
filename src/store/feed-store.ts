@@ -217,6 +217,7 @@ interface FeedStore {
     // System
     hasSeenTutorial: boolean
     setHasSeenTutorial: (val: boolean) => void
+    isCloudLoaded: boolean
 }
 
 export const useFeedStore = create<FeedStore>()(
@@ -252,6 +253,7 @@ export const useFeedStore = create<FeedStore>()(
                 set({ globalMuteKeywords: keywords })
                 get().syncToCloud()
             },
+            isCloudLoaded: false,
             bookmarks: [],
             isBookmarked: (articleId) => get().bookmarks.some((b) => b.id === articleId),
             addBookmark: (article) => {
@@ -282,6 +284,8 @@ export const useFeedStore = create<FeedStore>()(
                                 id: column.id || `col-${crypto.randomUUID()}`,
                             },
                         ],
+                        // 何か追加されたら初期化済みとする
+                        isInitialized: true
                     }
                 })
                 get().syncToCloud()
@@ -322,17 +326,39 @@ export const useFeedStore = create<FeedStore>()(
                         .single()
 
                     if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows
+                    
                     if (data) {
-                        set({
-                            columns: data.columns as FeedColumnConfig[],
-                            bookmarks: data.bookmarks as Article[],
-                            viewMode: (data.view_mode as 'card' | 'compact' | 'gallery') || 'card',
-                            readArticleIds: (data.read_article_ids as string[]) || [],
-                            globalMuteKeywords: (data.mute_keywords as string[]) || [],
+                        const cloudColumns = (data.columns as FeedColumnConfig[]) || []
+                        const localColumns = get().columns
+
+                        // マージロジック: ローカルにしかない（追加したての）カラムを保護
+                        const mergedColumns = [...cloudColumns]
+                        localColumns.forEach(localCol => {
+                            if (!mergedColumns.some(cloudCol => cloudCol.url === localCol.url)) {
+                                mergedColumns.push(localCol)
+                            }
                         })
+
+                        set({
+                            columns: mergedColumns,
+                            bookmarks: (data.bookmarks as Article[]) || get().bookmarks,
+                            viewMode: (data.view_mode as 'card' | 'compact' | 'gallery') || get().viewMode,
+                            readArticleIds: (data.read_article_ids as string[]) || get().readArticleIds,
+                            globalMuteKeywords: (data.mute_keywords as string[]) || get().globalMuteKeywords,
+                            isInitialized: data.is_initialized ?? get().isInitialized,
+                            isCloudLoaded: true,
+                        })
+
+                        // マージが発生した場合はクラウドに反映
+                        if (mergedColumns.length > cloudColumns.length) {
+                            get().syncToCloud()
+                        }
+                    } else {
+                        set({ isCloudLoaded: true })
                     }
                 } catch (e) {
                     console.error('Failed to load from cloud:', e)
+                    set({ isCloudLoaded: true })
                 }
             },
             syncToCloud: async () => {
@@ -348,6 +374,7 @@ export const useFeedStore = create<FeedStore>()(
                         view_mode: state.viewMode,
                         read_article_ids: state.readArticleIds,
                         mute_keywords: state.globalMuteKeywords,
+                        is_initialized: state.isInitialized,
                         updated_at: new Date().toISOString(),
                     })
                 } catch (e) {
@@ -368,6 +395,7 @@ export const useFeedStore = create<FeedStore>()(
                 readArticleIds: state.readArticleIds,
                 globalMuteKeywords: state.globalMuteKeywords,
                 hasSeenTutorial: state.hasSeenTutorial,
+                isInitialized: state.isInitialized,
             }),
         }
     )
