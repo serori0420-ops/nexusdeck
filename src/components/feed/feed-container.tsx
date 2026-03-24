@@ -12,6 +12,7 @@ import {
 } from "@dnd-kit/core"
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable"
 import { FeedColumn } from "./feed-column"
+import { AiHighlightsColumn } from "./ai-highlights-column"
 import { SourceManager } from "./source-manager"
 import { useFeedStore } from "@/store/feed-store"
 import { Plus } from "lucide-react"
@@ -58,6 +59,9 @@ export function FeedContainer() {
                 onDragEnd={handleDragEnd}
             >
                 <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted/40 hover:scrollbar-thumb-muted-foreground/40">
+                    {/* AI Highlights: Scout Agent が収集した記事の専用カラム（DnD対象外・先頭固定） */}
+                    <AiHighlightsColumn />
+
                     <SortableContext
                         items={columns.map((c) => c.id)}
                         strategy={horizontalListSortingStrategy}

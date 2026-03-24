@@ -25,7 +25,7 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
     const apiUrl = url.startsWith('/api/')
         ? url
         : `/api/feed?url=${encodeURIComponent(url)}&source=${encodeURIComponent(sourceName)}`
-    const { removeColumn, viewMode, globalMuteKeywords, markMultipleAsRead } = useFeedStore()
+    const { removeColumn, viewMode, globalMuteKeywords, markMultipleAsRead, readArticleIds } = useFeedStore()
 
     const { data, error, isLoading, mutate } = useSWR<{ articles: Article[] }, any>(
         url ? apiUrl : null,
@@ -51,6 +51,7 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
     }
 
     const rawArticles = data?.articles || []
+    const unreadCount = rawArticles.filter(a => !readArticleIds.includes(a.id)).length
 
     // Filter out PR / Ads
     const articles = rawArticles.filter(article => {
@@ -161,8 +162,12 @@ export function FeedColumn({ id, title, url, sourceName, className }: FeedColumn
                         </h2>
                     </div>
                     {!isLoading && !error && (
-                        <span className="text-[10px] font-medium text-muted-foreground bg-muted/80 px-1.5 py-0.5 rounded-md tabular-nums shrink-0">
-                            {articles.length}
+                        <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md tabular-nums shrink-0 transition-colors ${
+                            unreadCount > 0
+                                ? 'bg-primary/20 text-primary font-bold'
+                                : 'bg-muted/80 text-muted-foreground'
+                        }`}>
+                            {unreadCount > 0 ? `${unreadCount}未読` : articles.length}
                         </span>
                     )}
                 </div>

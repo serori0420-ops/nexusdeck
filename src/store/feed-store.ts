@@ -214,6 +214,11 @@ interface FeedStore {
     // Cloud Sync
     loadFromCloud: () => Promise<void>
     syncToCloud: () => Promise<void>
+    // Digest Settings
+    digestEmail: string
+    digestHour: number
+    setDigestEmail: (email: string) => void
+    setDigestHour: (hour: number) => void
     // System
     hasSeenTutorial: boolean
     setHasSeenTutorial: (val: boolean) => void
@@ -346,6 +351,8 @@ export const useFeedStore = create<FeedStore>()(
                             readArticleIds: (data.read_article_ids as string[]) || get().readArticleIds,
                             globalMuteKeywords: (data.mute_keywords as string[]) || get().globalMuteKeywords,
                             isInitialized: data.is_initialized ?? get().isInitialized,
+                            digestEmail: (data.digest_email as string) || get().digestEmail,
+                            digestHour: (data.digest_hour as number) ?? get().digestHour,
                             isCloudLoaded: true,
                         })
 
@@ -375,11 +382,25 @@ export const useFeedStore = create<FeedStore>()(
                         read_article_ids: state.readArticleIds,
                         mute_keywords: state.globalMuteKeywords,
                         is_initialized: state.isInitialized,
+                        digest_email: state.digestEmail,
+                        digest_hour: state.digestHour,
                         updated_at: new Date().toISOString(),
                     })
                 } catch (e) {
                     console.error('Failed to sync to cloud:', e)
                 }
+            },
+
+            // Digest Settings
+            digestEmail: '',
+            digestHour: 7,
+            setDigestEmail: (email) => {
+                set({ digestEmail: email })
+                get().syncToCloud()
+            },
+            setDigestHour: (hour) => {
+                set({ digestHour: hour })
+                get().syncToCloud()
             },
 
             // System
@@ -396,6 +417,8 @@ export const useFeedStore = create<FeedStore>()(
                 globalMuteKeywords: state.globalMuteKeywords,
                 hasSeenTutorial: state.hasSeenTutorial,
                 isInitialized: state.isInitialized,
+                digestEmail: state.digestEmail,
+                digestHour: state.digestHour,
             }),
         }
     )

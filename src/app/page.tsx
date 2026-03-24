@@ -2,6 +2,7 @@ import { FeedContainer } from "@/components/feed/feed-container";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SourceManager } from "@/components/feed/source-manager";
 import { BookmarkPanel } from "@/components/feed/bookmark-panel";
+import { DigestSettings } from "@/components/feed/digest-settings";
 import { TutorialModal } from "@/components/tutorial-modal";
 import { UserMenu } from "@/components/user-menu";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export default function Home() {
               <Settings2 className="h-5 w-5" />
             </Button>
           } />
+          <DigestSettings />
           <BookmarkPanel />
           <ThemeToggle />
         </div>

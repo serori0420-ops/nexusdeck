@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>真戦ツール ⚔️</title>
+  <style>
+    :root {
+      --bg: #0d0b08;
+      --bg2: #1a1510;
+      --bg3: #252018;
+      --gold: #c9a227;
+      --gold2: #e8c547;
+      --red: #b03020;
+      --red2: #d44030;
+      --text: #ede8df;
+      --text2: #998878;
+      --border: #3a3020;
+      --success: #4a9060;
+      --blue: #2870a0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ---- HEADER ---- */
+    .header {
+      background: linear-gradient(135deg, #1a0a00 0%, #2d1800 50%, #1a0a00 100%);
+      border-bottom: 2px solid var(--gold);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-icon { font-size: 2rem; }
+    .header h1 {
+      font-size: 1.25rem;
+      color: var(--gold);
+      text-shadow: 0 0 16px rgba(201,162,39,0.6);
+      letter-spacing: 0.05em;
+    }
+    .header .sub { font-size: 0.75rem; color: var(--text2); margin-top: 2px; }
+
+    /* ---- TABS ---- */
+    .tabs {
+      display: flex;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex: 1;
+      min-width: 72px;
+      padding: 13px 8px;
+      background: none;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 0.82rem;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: rgba(201,162,39,0.05); }
+    .tab-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.04); }
+
+    /* ---- CONTENT ---- */
+    .tab-content { display: none; padding: 16px; max-width: 1100px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* ---- CARD ---- */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .card-title {
+      font-size: 1rem;
+      color: var(--gold);
+      margin-bottom: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ---- FORM ---- */
+    .form-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .form-group { flex: 1; min-width: 120px; }
+    .form-group label { display: block; font-size: 0.72rem; color: var(--text2); margin-bottom: 4px; }
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+    textarea { resize: vertical; min-height: 70px; }
+    input[type="file"] { padding: 5px; }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+      transition: all 0.18s;
+    }
+    .btn-primary { background: var(--gold); color: #1a0a00; }
+    .btn-primary:hover { background: var(--gold2); transform: translateY(-1px); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-danger:hover { background: var(--red2); }
+    .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-sm { padding: 4px 10px; font-size: 0.76rem; }
+
+    /* ---- STATS BAR ---- */
+    .stats-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .stat-chip {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 13px;
+      font-size: 0.8rem;
+    }
+    .stat-chip span { color: var(--gold); font-weight: bold; }
+
+    /* ---- TRACKER TABLE ---- */
+    .tracker-wrap { overflow-x: auto; }
+    .tracker-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    .tracker-table th {
+      text-align: left;
+      padding: 9px 10px;
+      color: var(--gold);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tracker-table th:hover { color: var(--gold2); }
+    .tracker-table td { padding: 9px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+    .tracker-table tr:hover td { background: rgba(255,255,255,0.03); }
+    .power-bar { height: 5px; background: var(--border); border-radius: 3px; margin-top: 4px; overflow: hidden; width: 80px; }
+    .power-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--red)); border-radius: 3px; transition: width 0.4s; }
+    .rank-1 { color: var(--gold); font-weight: bold; }
+    .rank-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      margin-left: 5px;
+      background: rgba(201,162,39,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(201,162,39,0.3);
+    }
+
+    /* ---- NOTES ---- */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 12px;
+    }
+    .note-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      border-left: 3px solid var(--border);
+    }
+    .note-card.cat-戦略 { border-left-color: #c0392b; }
+    .note-card.cat-武将 { border-left-color: #2980b9; }
+    .note-card.cat-内政 { border-left-color: #27ae60; }
+    .note-card.cat-外交 { border-left-color: #8e44ad; }
+    .note-card.cat-その他 { border-left-color: var(--gold); }
+    .note-title { font-weight: bold; font-size: 0.93rem; margin-bottom: 6px; }
+    .note-body { font-size: 0.81rem; color: var(--text2); white-space: pre-wrap; line-height: 1.55; margin-bottom: 10px; }
+    .note-footer { display: flex; justify-content: space-between; align-items: center; }
+    .cat-tag {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.08);
+      color: var(--text2);
+    }
+    .search-bar { position: relative; margin-bottom: 14px; }
+    .search-bar input { padding-left: 34px; }
+    .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; }
+
+    /* ---- SIMULATOR ---- */
+    .type-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .type-filter-btn {
+      padding: 5px 13px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 0.79rem;
+      transition: all 0.18s;
+    }
+    .type-filter-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(201,162,39,0.1); }
+
+    .selected-slot {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px;
+      background: var(--bg3);
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      min-height: 48px;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+    .slot-tag {
+      padding: 4px 11px;
+      border-radius: 14px;
+      font-size: 0.79rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: opacity 0.15s;
+    }
+    .slot-tag:hover { opacity: 0.75; }
+
+    .tactic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tactic-card {
+      background: var(--bg3);
+      border: 2px solid var(--border);
+      border-radius: 9px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-align: center;
+    }
+    .tactic-card:hover { border-color: rgba(201,162,39,0.5); transform: translateY(-1px); }
+    .tactic-card.selected:hover { border-color: var(--red2); background: rgba(192,57,43,0.15); }
+    .tactic-card.selected { border-color: var(--gold); background: rgba(201,162,39,0.09); }
+    .tactic-name { font-weight: bold; font-size: 0.9rem; }
+    .tactic-type-label { font-size: 0.7rem; margin-top: 3px; }
+    .tactic-effect-label { font-size: 0.7rem; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+    .type-攻撃 { color: #e05040; }
+    .type-防御 { color: #4090c0; }
+    .type-支援 { color: #50a870; }
+    .type-特殊 { color: #9060c0; }
+
+    .synergy-box {
+      background: rgba(201,162,39,0.06);
+      border: 1px solid rgba(201,162,39,0.4);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .synergy-box-title { font-size: 0.95rem; color: var(--gold); font-weight: bold; margin-bottom: 10px; }
+    .synergy-item {
+      background: var(--bg3);
+      border-radius: 7px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--gold);
+    }
+    .synergy-item-name { font-weight: bold; color: var(--gold2); margin-bottom: 3px; font-size: 0.9rem; }
+    .synergy-item-desc { font-size: 0.8rem; color: var(--text2); }
+    .no-synergy { color: var(--text2); font-size: 0.84rem; font-style: italic; }
+
+    /* ---- RIVALS ---- */
+    .rivals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px;
+    }
+    .rival-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    .rival-thumb {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: var(--bg3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+    .rival-thumb img { width: 100%; height: 120px; object-fit: cover; display: block; }
+    .rival-info { padding: 10px 12px; }
+    .rival-name { font-weight: bold; font-size: 0.93rem; margin-bottom: 5px; }
+    .rival-stat { font-size: 0.78rem; color: var(--text2); line-height: 1.65; }
+    .rival-actions { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+    .threat-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .threat-高 { background: rgba(176,48,32,0.85); color: #fff; }
+    .threat-中 { background: rgba(200,140,20,0.85); color: #111; }
+    .threat-低 { background: rgba(50,140,80,0.85); color: #fff; }
+
+    /* ---- EMPTY ---- */
+    .empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text2);
+    }
+    .empty .icon { font-size: 3rem; margin-bottom: 10px; }
+    .empty .msg { font-size: 0.85rem; }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      right: 20px;
+      background: var(--bg2);
+      border: 1px solid var(--gold);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.28s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* rank colors */
+    .rank-SS { color: #e83030; font-weight:bold; }
+    .rank-S  { color: #e8a020; font-weight:bold; }
+    .rank-A  { color: #4090d0; }
+    .rank-B  { color: #50a870; }
+    .rank-C  { color: var(--text2); }
+    .kind-badge {
+      display:inline-block;padding:1px 6px;border-radius:8px;
+      font-size:0.65rem;margin-top:3px;
+      background:rgba(255,255,255,0.08);color:var(--text2);
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-icon">⚔️</div>
+  <div>
+    <h1>真戦ツール</h1>
+    <div class="sub">信長の野望 真戦 — 友達と使えるツール</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('tracker',this)">🗡️ 戦力</button>
+  <button class="tab-btn" onclick="showTab('notes',this)">📝 メモ</button>
+  <button class="tab-btn" onclick="showTab('simulator',this)">⚔️ 戦法</button>
+  <button class="tab-btn" onclick="showTab('rivals',this)">🔍 ライバル</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: TRACKER -->
+<!-- ============================================================ -->
+<div id="tab-tracker" class="tab-content active">
+  <div class="card">
+    <div class="card-title">➕ 友達を追加</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>プレイヤー名 *</label>
+        <input id="t-name" type="text" placeholder="例：武田信玄">
+      </div>
+      <div class="form-group">
+        <label>大名家</label>
+        <input id="t-faction" type="text" placeholder="例：武田家">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>総兵力</label>
+        <input id="t-troops" type="number" placeholder="例：150000" min="0">
+      </div>
+      <div class="form-group">
+        <label>戦力値</label>
+        <input id="t-power" type="number" placeholder="例：85000" min="0">
+      </div>
+      <div class="form-group">
+        <label>武将数</label>
+        <input id="t-generals" type="number" placeholder="例：45" min="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>メモ</label>
+        <input id="t-memo" type="text" placeholder="例：攻略協力中">
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addTracker()">追加する</button>
+  </div>
+
+  <div id="tracker-stats" class="stats-bar"></div>
+
+  <div class="card">
+    <div class="card-title">👥 戦力一覧 <span style="font-size:0.75rem;color:var(--text2);font-weight:normal">（列名クリックで並び替え）</span></div>
+    <div id="tracker-wrap" class="tracker-wrap"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: NOTES -->
+<!-- ============================================================ -->
+<div id="tab-notes" class="tab-content">
+  <div class="card">
+    <div class="card-title">📝 新規メモ</div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label>タイトル *</label>
+        <input id="n-title" type="text" placeholder="例：武田家との同盟について">
+      </div>
+      <div class="form-group">
+        <label>カテゴリ</label>
+        <select id="n-cat">
+          <option>戦略</option>
+          <option>武将</option>
+          <option>内政</option>
+          <option>外交</option>
+          <option>その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>内容</label>
+      <textarea id="n-body" placeholder="攻略メモを入力..."></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="addNote()">メモを保存</button>
+  </div>
+
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="note-search" placeholder="タイトル・内容・カテゴリで検索..." oninput="renderNotes()">
+  </div>
+
+  <div id="notes-grid" class="notes-grid"></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: SIMULATOR -->
+<!-- ============================================================ -->
+<div id="tab-simulator" class="tab-content">
+  <div class="card">
+    <div class="card-title">⚔️ 戦法シミュレーター</div>
+    <p style="font-size:0.81rem;color:var(--text2);margin-bottom:12px">戦法カードをクリックして選択（最大4つ）。名前で検索・フィルタ可能。</p>
+
+    <div style="font-size:0.82rem;color:var(--text2);margin-bottom:6px">✅ 選択中の戦法</div>
+    <div id="selected-slot" class="selected-slot">
+      <span style="color:var(--text2);font-size:0.8rem">戦法を選んでください</span>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <div style="flex:1;min-width:160px">
+        <div class="search-bar" style="margin-bottom:0">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="sim-search" placeholder="戦法名・武将名で検索..." oninput="renderTactics()">
+        </div>
+      </div>
+    </div>
+
+    <div class="type-filter" style="margin-bottom:6px">
+      <span style="font-size:0.75rem;color:var(--text2);align-self:center;margin-right:4px">ランク:</span>
+      <button class="type-filter-btn active" onclick="setRankFilter('全て',this)">全て</button>
+      <button class="type-filter-btn" onclick="setRankFilter('SS',this)">SS</button>
+      <button class="type-filter-btn" onclick="setRankFilter('S',this)">S</button>
+      <button class="type-filter-btn" onclick="setRankFilter('A',this)">A</button>
+      <button class="type-filter-btn" onclick="setRankFilter('B',this)">B</button>
+    </div>
+
+    <div class="type-filter" style="margin-bottom:6px">
+      <span style="font-size:0.75rem;color:var(--text2);align-self:center;margin-right:4px">種類:</span>
+      <button class="type-filter-btn active" onclick="setTypeFilter('全て',this)">全て</button>
+      <button class="type-filter-btn" onclick="setTypeFilter('固有',this)">👑 固有</button>
+      <button class="type-filter-btn" onclick="setTypeFilter('伝授',this)">📖 伝授</button>
+      <button class="type-filter-btn" onclick="setTypeFilter('事件',this)">⚡ 事件</button>
+    </div>
+
+    <div class="type-filter" style="margin-bottom:12px">
+      <span style="font-size:0.75rem;color:var(--text2);align-self:center;margin-right:4px">発動:</span>
+      <button class="type-filter-btn active" onclick="setKindFilter('全て',this)">全て</button>
+      <button class="type-filter-btn" onclick="setKindFilter('能動',this)">⚔️ 能動</button>
+      <button class="type-filter-btn" onclick="setKindFilter('受動',this)">🛡️ 受動</button>
+      <button class="type-filter-btn" onclick="setKindFilter('指揮',this)">📣 指揮</button>
+      <button class="type-filter-btn" onclick="setKindFilter('突撃',this)">💨 突撃</button>
+      <button class="type-filter-btn" onclick="setKindFilter('兵種',this)">🐴 兵種</button>
+    </div>
+
+    <div id="sim-count" style="font-size:0.78rem;color:var(--text2);margin-bottom:8px"></div>
+    <div id="tactic-grid" class="tactic-grid"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TAB: RIVALS -->
+<!-- ============================================================ -->
+<div id="tab-rivals" class="tab-content">
+  <div class="card">
+    <div class="card-title">➕ ライバルを追加</div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2">
+        <label>プレイヤー名 / 大名 *</label>
+        <input id="r-name" type="text" placeholder="例：上杉謙信">
+      </div>
+      <div class="form-group">
+        <label>脅威度</label>
+        <select id="r-threat">
+          <option>高</option>
+          <option>中</option>
+          <option>低</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>推定兵力</label>
+        <input id="r-troops" type="text" placeholder="例：200000">
+      </div>
+      <div class="form-group">
+        <label>主力戦法</label>
+        <input id="r-tactic" type="text" placeholder="例：騎突、火矢">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:8px">
+      <label>対策メモ</label>
+      <textarea id="r-memo" placeholder="弱点・対策・注意点など..." style="min-height:60px"></textarea>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>スクリーンショット（任意）</label>
+      <input type="file" id="r-img" accept="image/*">
+    </div>
+    <button class="btn btn-primary" onclick="addRival()">ライバルを登録</button>
+  </div>
+
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="rival-search" placeholder="名前・戦法・メモで検索..." oninput="renderRivals()">
+  </div>
+
+  <div id="rivals-grid" class="rivals-grid"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const TACTICS = [
+  {id:1,name:'家中整序',rank:'A',type:'事件',kind:'能動',prob:'35%',effect:'敵軍単体に計略ダメージ（ダメージ率68%→136%）を与え、その敵軍に封撃効果を付与し、2ターン持続',source:'群雄・星4×10'},
+  {id:2,name:'破天の轟',rank:'A',type:'事件',kind:'能動',prob:'35%',effect:'1ターンの準備期間の後、敵軍複数（2人）に火傷効果（ダメージ率52%→105%）を付与し、さらに統率を10→20低下させる。2ターン持続',source:'群雄・星4×10'},
+  {id:3,name:'姻戚同盟',rank:'S',type:'事件',kind:'能動',prob:'40%',effect:'自身と異性の友軍単体の被ダメージを10%→20%（知略依存）減少させ、さらにその友軍が受けるダメージを10%→20%分担する。2ターン持続',source:'お市×1/浅井家・星5×1'},
+  {id:4,name:'離心の計',rank:'S',type:'事件',kind:'能動',prob:'35%',effect:'1ターンの準備期間の後、敵軍の大将に兵刃ダメージ（ダメージ率176%→252%）を与え、さらにその与ダメージを25%→50%低下させ、2ターン持続',source:'稲葉一鉄×1/織田家・星4×10'},
+  {id:5,name:'城盗り',rank:'S',type:'事件',kind:'能動',prob:'35%',effect:'自身の知略を16.5→33（知略依存）増加させ、2ターン持続。さらに敵軍複数（2～3人）に対し、次に計略ダメージを受けた際に追加ダメージ（ダメージ率53%→106%）を発生させ、2ターン持続',source:'竹中半兵衛×1/斎藤家・星5×1'},
+  {id:6,name:'専横専断',rank:'S',type:'事件',kind:'能動',prob:'40%',effect:'自身の次の能動戦法による兵刃ダメージを24%→48%上昇させる。この戦法が発動するたびに、ダメージ上昇効果は6%→12%増加する。3回目の発動毎に、敵軍単体に無策状態を付与し、1ターン持続',source:'大内家・星5×2'},
+  {id:7,name:'自立の志',rank:'S',type:'事件',kind:'能動',prob:'40%',effect:'敵軍全体を挑発状態にし、同時に自身の統率を22.5%→55%増加させる。2ターン持続',source:'毛利隆元×1/毛利家・星5×1'},
+  {id:8,name:'静動自在',rank:'S',type:'伝授',kind:'能動',prob:'15%→30%',effect:'自身より行動順が遅い自軍単体を選択し、洞察と先攻状態を付与し、2ターン持続。自身の行動順が最も遅い場合は、自身に洞察と先攻状態を付与し、2ターン持続',source:'瑞溪院 / 大内義隆'},
+  {id:9,name:'縦横馳突',rank:'S',type:'伝授',kind:'能動',prob:'20%→40%',effect:'自身に連撃（1ターンに2回通常攻撃が可能）を付与し、さらに封撃（通常攻撃不可）耐性を獲得する。1ターン持続',source:'山県昌景'},
+  {id:10,name:'先陣鼓舞',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ （ダメージ率121%→242%）を与え、さらに自軍単体の固有戦法発動確率を8%→16%増加させる。2ターン持続',source:'相馬盛胤'},
+  {id:11,name:'時は今',rank:'S',type:'固有',kind:'能動',prob:'35%→70%',effect:'敵軍複数（2名）に、以下のいずれか1種を付与（既存と異なる状態を優先、ダメージ率56%）。 火傷（知略依存）、水攻め（知略依存）、中毒（知略依存）、消沈（知略依存）、潰走（武勇依存）。 付与状態の持続期間は3ターン。',source:'明智光秀'},
+  {id:12,name:'相模の獅子',rank:'S',type:'固有',kind:'能動',prob:'45%',effect:'2ターンの間、自軍複数（2～3名）に42.5%→85%の鉄壁（ダメージを無効化）を2回分付与。対象が鉄壁状態中の場合、代わりに敵軍単体に計略ダメージ（ダメージ率89%→178%、知略依存）',source:'北条氏康'},
+  {id:13,name:'梟雄の計',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、敵軍複数（2～3名）に計略ダメージ（ダメージ率64%→128%、知略依存）。55%の確率で2ターンの間、対象に中毒（中毒状態中の場合は疲弊に変更）・火傷を付与（ダメージ率48%→96%、知略依存、状態ごとに個別判定）。5ターン目以降に発...',source:'松永久秀'},
+  {id:14,name:'地黄八幡',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、敵軍全体に兵刃ダメージ（ダメージ率87%→174%）。18%→36%の確率（武勇依存）で対象に1ターンの間封撃・無策を付与（対象ごとに判定）',source:'北条綱成'},
+  {id:15,name:'かかれ柴田',rank:'S',type:'固有',kind:'能動',prob:'50%',effect:'自身の弱体化効果を2個浄化し、敵軍全体に兵刃ダメージ（ダメージ率77%→154%）。1ターン後に再発動可能',source:'柴田勝家'},
+  {id:16,name:'掃疑平乱',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'2ターンの間、自身と友軍単体が39%→78%の乱舞を獲得。5ターン目以降は、追加で2ターンの間、双方の速度が10%→20%上昇',source:'伊達晴宗'},
+  {id:17,name:'斗星北天',rank:'S',type:'固有',kind:'能動',prob:'45%',effect:'2ターンの間、自身は洞察を獲得し、統率と知略が25→50増加し、敵軍複数（2～3名）に牽制（37.5%→75%の確率で自身を敵軍戦法の発動対象に固定、知略依存）を付与',source:'安東愛季'},
+  {id:18,name:'無想掃射',rank:'S',type:'固有',kind:'能動',prob:'60%',effect:'敵軍複数（1～2名）に兵刃ダメージ（ダメージ率51%→102%）。2ターンの間、自身の兵刃与ダメージが25%→50%上昇。自身より先に行動した武将1名につき、兵刃与ダメージ上昇効果が5%→10%減少',source:'榊原康政'},
+  {id:19,name:'啄木鳥',rank:'S',type:'固有',kind:'能動',prob:'40%',effect:'敵軍単体に計略ダメージ（ダメージ率78%→156%、知略依存）を与え、武勇が最も高い自軍単体が同じ対象に兵刃ダメージ（ダメージ率80%→160%、武勇と速度依存）。さらに1ターンの間、17.5%→35%の確率（速度依存）で威圧を付与',source:'山本勘助'},
+  {id:20,name:'冷徹無情',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に兵刃ダメージ（ダメージ率71%→142%、追加で対象の兵力の損害にも依存、最大25%→50%増加）。対象の兵力が50%以下の場合、2ターンの間、自身の能動戦法の発動確率が10%増加（最大2回まで重ねがけ可能）',source:'陶晴賢'},
+  {id:21,name:'死灰復然',rank:'S',type:'固有',kind:'能動',prob:'45%',effect:'最も兵力が少ない自軍単体を回復（回復率138%→276%、知略依存）。1ターンの間、対象の被ダメージが9%→18%低下（知略依存）。回復量が超過した場合、追加で自身を回復（回復率54%→108%、知略依存）',source:'内藤昌豊'},
+  {id:22,name:'十面埋伏',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、敵軍全体の被ダメージが9%→18%（知略依存）上昇。その後、対象全体に計略ダメージ（ダメージ率69%→138%、知略依存）',source:'竹中半兵衛'},
+  {id:23,name:'一心一徳',rank:'S',type:'固有',kind:'能動',prob:'50%',effect:'自軍複数（2～3名）を回復し（回復率30%→60%、知略依存）、1ターンの間休養（毎ターン兵力回復）を付与（回復率38%→76%、知略依存）',source:'毛利隆元'},
+  {id:24,name:'夢幻泡影',rank:'S',type:'固有',kind:'能動',prob:'50%',effect:'自軍複数（2名）を回復し（回復率59%→118%、知略依存）、2ターンの間、対象の与ダメージが7.5%→15%上昇（知略依存）',source:'お市'},
+  {id:25,name:'疾風怒濤',rank:'S',type:'固有',kind:'能動',prob:'40%',effect:'2ターンの間、自身と友軍単体が22.5%→45%の会心を獲得し、敵軍複数（2名）に兵刃ダメージ（ダメージ率51%→102%）',source:'甘粕景持'},
+  {id:26,name:'先制攻撃',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、敵軍複数（2～3名）に計略ダメージ（ダメージ率66%→132%、知略依存）を与え、2ターンの間対象の能動戦法の被ダメージが15%→30%上昇',source:'河田長親'},
+  {id:27,name:'密報通暁',rank:'S',type:'固有',kind:'能動',prob:'25%→50%',effect:'1ターンの準備後、2ターンの間、友軍単体が洞察を獲得し、敵軍単体に撹乱（能動戦法発動時に計略ダメージ、ダメージ率152%、知略依存）を付与',source:'樋口兼豊'},
+  {id:28,name:'三楽犬',rank:'S',type:'固有',kind:'能動',prob:'25%→45%',effect:'1ターンの間、自軍複数（2～3名）が先攻・必中を獲得し、速度が最も高い敵軍単体に標記を付与。付与された対象が行動すると、強化された自軍がその対象に兵刃ダメージ（ダメージ率146%）。1ターン後に再発動可能',source:'太田資正'},
+  {id:29,name:'先手必勝',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に計略ダメージ（ダメージ率67%→134%、知略依存）を与え、2ターンの間、対象が次に受ける能動戦法のダメージが26%→52%上昇',source:'板垣信方'},
+  {id:30,name:'不屈の精神',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'2ターンの間、自身は反撃を獲得し、通常攻撃を受けると攻撃者に1回反撃（ダメージ率74%→148%）を付与。反撃の持続期間中に通常攻撃を2回受けると武勇が18→36増加（重ねがけ可能、戦闘終了まで持続）',source:'一条信龍'},
+  {id:31,name:'洞察反撃',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、自軍複数（2名）に洞察を付与。自身は2ターンの間、次に通常攻撃を受けた際に攻撃者に計略ダメージ（ダメージ率152%→304%、知略依存）',source:'岡部元信'},
+  {id:32,name:'甲山猛虎',rank:'S',type:'固有',kind:'能動',prob:'45%',effect:'敵軍複数（2名）に兵刃ダメージ（ダメージ率48%→96%）を与え、1ターンの間封撃を付与',source:'飯富虎昌'},
+  {id:33,name:'諏訪の光',rank:'S',type:'固有',kind:'能動',prob:'20%→45%',effect:'自軍複数（2名）の弱体化効果を2個浄化し、2ターンの間、対象の武勇と統率が36増加',source:'諏訪姫'},
+  {id:34,name:'陣前無我',rank:'S',type:'固有',kind:'能動',prob:'30%→55%',effect:'自身の兵力が自軍の最低値でない場合、1ターンの間、敵軍複数（2～3名）に挑発と牽制（強制的に敵軍の通常攻撃と戦法の発動対象を自身に固定）を付与。そうでない場合、自身の兵力を回復（回復率258%、統率依存）',source:'佐久間信盛'},
+  {id:35,name:'一徹の意志',rank:'S',type:'固有',kind:'能動',prob:'20%→40%',effect:'2ターンの間、自身の統率が150上昇し、武勇が最も高い敵軍単体に挑発・牽制を付与し、強制的に敵軍の通常攻撃と戦法の発動対象を自身に固定。自身が弱体化効果中の場合、追加で2ターンの間2回分の鉄壁を獲得（1ターン後に再発動可能）',source:'稲葉一鉄'},
+  {id:36,name:'形影相弔',rank:'S',type:'固有',kind:'能動',prob:'45%',effect:'自身と知略が最も高い敵軍武将で同時にランダムな敵軍単体に計略ダメージ（ダメージ率96%→192%、知略依存）。ただし、6ターン目以降は、知略が最も高い敵軍武将の計略ダメージの対象が友軍単体に変更',source:'荒木村重'},
+  {id:37,name:'湖水渡り',rank:'S',type:'固有',kind:'能動',prob:'30%→65%',effect:'2ターンの間、自身と友軍単体が奇策を65%獲得。期間中、奇策ダメージを1回与えるたびに、奇策ダメージ率が15%増加（最大4回重ねがけ可能、戦闘終了まで持続）',source:'明智秀満'},
+  {id:38,name:'攻めの三左',rank:'S',type:'固有',kind:'能動',prob:'45%',effect:'敵軍単体に兵刃ダメージ（ダメージ率71%→142%）。3ターンの間、対象に潰走（ダメージ率36%→72%）を付与。対象がすでに潰走状態中の場合、自身の兵力を回復（回復率35%→70%、武勇依存）',source:'森可成'},
+  {id:39,name:'笹の才蔵',rank:'S',type:'固有',kind:'能動',prob:'30%',effect:'1ターンの準備後、敵軍単体に大量の兵刃ダメージ（ダメージ率261%→522%）を与え、3ターンの間回復不可（兵力を回復不能）を付与。この攻撃で対象を倒した場合、次のターンにこの戦法の発動確率が100%増加し、準備ターンは不要',source:'可児才蔵'},
+  {id:40,name:'破陣乱舞',rank:'S',type:'固有',kind:'能動',prob:'50%',effect:'1ターンの間、自身と武勇が最も高い友軍単体が22%→44%（武勇依存）の破陣を獲得。さらに自身はこのターンの間、通常攻撃時に対象に追加で1回兵刃ダメージ（ダメージ率101%→202%）。1ターン後に再発動可能',source:'酒井忠次'},
+  {id:41,name:'仏の高力',rank:'S',type:'固有',kind:'能動',prob:'40%',effect:'2ターンの間、友軍単体の能動戦法の発動率が4.5%→9%（統率依存）増加。対象が次に能動戦法を発動した後、統率が15%→30%増加',source:'高力清長'},
+  {id:42,name:'勇志不抜',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'2ターンの間、友軍複数（2名）の被ダメージの20%を肩代りし、自身の武勇が37.5→75増加し、12%→24%の離反を獲得。自身の兵力が50%以下の場合は武勇が50→100増加し、16%→32%の離反を獲得',source:'松平信康'},
+  {id:43,name:'綱紀粛正',rank:'S',type:'固有',kind:'能動',prob:'25%→50%',effect:'1ターンの準備後、敵軍単体に計略ダメージ（ダメージ率196%、知略依存）。2ターンの間、対象に威圧を付与',source:'尼子晴久'},
+  {id:44,name:'公家風流',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、友軍複数（2名）が先攻を獲得し、能動戦法与ダメージが37.5%→75%上昇する（2ターン持続）',source:'朝倉義景'},
+  {id:45,name:'傲岸不遜',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に兵刃ダメージ（ダメージ率59%→118%）を与え、2ターンの間、挑発（敵軍の突撃戦法ダメージが15%→30%減少、統率依存）を付与',source:'斎藤義龍'},
+  {id:46,name:'満ちゆく月',rank:'S',type:'固有',kind:'能動',prob:'25%→50%',effect:'1ターンの準備後、4ターンの間、敵軍単体に潰走（ダメージ率108%、潰走を持っていない敵軍単体が優先）を付与。さらに2ターンの間、潰走状態中の敵軍の次2回の与ダメージが40%低下',source:'南部晴政'},
+  {id:47,name:'湖北仁義',rank:'S',type:'固有',kind:'能動',prob:'40%',effect:'1ターンの間、7.5%→15%の離反（兵刃ダメージを与えた際にダメージ量に応じて兵力回復）を獲得し、敵軍複数（2名）に兵刃ダメージ（ダメージ率78%→156%）',source:'浅井長政'},
+  {id:48,name:'旋乾転坤',rank:'S',type:'固有',kind:'能動',prob:'30%',effect:'敵軍複数（2～3名）に計略ダメージ（ダメージ率63%→126%、知略依存）を与え、恐慌を付与。対象が指揮・受動戦法を所持している場合、2ターンの間、毎ターン対象に計略ダメージ（ダメージ率32%→64%、所持している指揮・受動戦法が1つ増加するたびにダメー...',source:'島津貴久'},
+  {id:49,name:'津田流砲術',rank:'S',type:'固有',kind:'能動',prob:'30%',effect:'敵軍単体に計略ダメージ（ダメージ率94%→188%、知略依存）。2ターンの間、対象にランダムで以下の状態の1つを付与：封撃、無策、威圧、混乱',source:'津田算長'},
+  {id:50,name:'怪力無双',rank:'S',type:'固有',kind:'能動',prob:'75%',effect:'2ターンの準備後、敵軍複数（2～3名）に大量の兵刃ダメージ（ダメージ率166.5%→333%）。この攻撃で対象を倒した場合、2ターンの間、自身が破陣を獲得',source:'真柄直隆'},
+  {id:51,name:'積水成淵',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、自軍複数（2～3名）に11%→22%の心攻（計略ダメージを与えた際にダメージ量に応じて兵力回復）を付与。さらに2ターンの間、敵軍複数（2～3名）に水攻めを付与し、毎ターン持続ダメージを与える（ダメージ率88%、知略依存）',source:'宮部継潤'},
+  {id:52,name:'槍弾正',rank:'S',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ（ダメージ率86%→172%）。1ターンの間、無策（能動戦法発動不可）を付与',source:'保科正俊'},
+  {id:53,name:'趨利避害',rank:'A',type:'固有',kind:'能動',prob:'45%',effect:'敵軍単体にダメージ（ダメージ率92%→184%、ダメージタイプは武勇と知略の高い方）。また、毎ターン最初に受ける異なるタイプの被ダメージが20%→40%低下、1ターン持続',source:'脇坂安治'},
+  {id:54,name:'殿軍反制',rank:'A',type:'固有',kind:'能動',prob:'30%→55%',effect:'2ターンの間、敵軍単体に挑発（強制的に自身を通常攻撃の対象に固定）または牽制（強制的に自身を戦法の対象に固定）を付与。敵軍がすでに挑発または牽制状態中の場合、2ターンの間、追加で与ダメージが25%低下。両状態同時存在の場合、与ダメージ低下効果が45%に増加',source:'氏家卜全'},
+  {id:55,name:'鉄砲猛撃',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に計略ダメージ（ダメージ率51%→102%、知略依存）。2ターンの間、対象の与ダメージが6%→12%低下',source:'鈴木重朝'},
+  {id:56,name:'先制先登',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に兵刃ダメージ（ダメージ率61%→122%）を与え、1ターンの間、先攻（優先行動）を獲得',source:'坂井政尚'},
+  {id:57,name:'鬼玄蕃',rank:'A',type:'固有',kind:'能動',prob:'30%',effect:'自身の次に受けるダメージが20%→30%上昇する代わりに、2ターンの間、9%→18%の離反（兵刃ダメージを与えた際にダメージ量に応じて兵力回復）を獲得。さらに敵軍複数（2～3名）に兵刃ダメージ（ダメージ率59%→118%）',source:'佐久間盛政'},
+  {id:58,name:'忠勤励行',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、自軍複数（2名）の兵刃与ダメージが7.5%→15%上昇。その後、自身が敵軍単体に兵刃ダメージ（ダメージ率148%→296%）',source:'大久保忠世'},
+  {id:59,name:'援護射撃',rank:'A',type:'固有',kind:'能動',prob:'40%',effect:'1ターンの間、友軍単体が15%→30%の回避を獲得。また、対象が初めてダメージを受けた際に自身が攻撃者に兵刃ダメージ（ダメージ率81%→162%、武勇と統率依存）',source:'水原親憲'},
+  {id:60,name:'不意打ち',rank:'A',type:'固有',kind:'能動',prob:'20%→45%',effect:'1ターンの準備後、1～2ターンの間（65%の確率で2ターンの間）、敵軍複数（2名）にランダムに無策（能動戦法発動不可）と封撃（通常攻撃不可）のいずれかを付与',source:'池田せん'},
+  {id:61,name:'有備無患',rank:'A',type:'固有',kind:'能動',prob:'45%',effect:'自軍複数（2名）の兵力を回復（回復率54%→108%、知略依存）',source:'蜂須賀家政'},
+  {id:62,name:'生死一顧',rank:'A',type:'固有',kind:'能動',prob:'50%',effect:'敵軍全体に計略ダメージ（ダメージ率28%→56%、知略依存）を与え、1ターンの間挑発（強制的に自身を通常攻撃の対象に固定）を付与',source:'鬼庭左月斎'},
+  {id:63,name:'弓調馬服',rank:'A',type:'固有',kind:'能動',prob:'45%',effect:'2ターンの間、敵軍単体の武勇と知略の高い方が50→100減少。10%→20%の確率（武勇依存）で双方減少',source:'山内一豊'},
+  {id:64,name:'先陣の勇',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ（ダメージ率77%→154%）を与え、17.5%→35%の確率（速度差依存）で1ターンの間威圧（行動不能）を付与。2ターンの間、自身の速度が10→20増加',source:'下方貞清'},
+  {id:65,name:'矢石飛交',rank:'A',type:'固有',kind:'能動',prob:'40%',effect:'敵軍単体にランダムで2～4回の兵刃ダメージ（ダメージ率42%→84%）',source:'小山田信茂'},
+  {id:66,name:'融通自在',rank:'A',type:'固有',kind:'能動',prob:'45%',effect:'2ターンの間、友軍単体の能動戦法の発動確率が6%→12%増加（最大2回重ねがけ可能）',source:'福原貞俊'},
+  {id:67,name:'秋水一色',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、自身と友軍単体の計略与ダメージが10%→20%上昇。その後、敵軍複数（2名）に計略ダメージ（ダメージ率74%→148%、知略依存）',source:'栗山善助'},
+  {id:68,name:'妖怪退治',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体の強化効果を1個「強化解除」し、その後兵刃ダメージ（ダメージ率128%→256%）',source:'多田三八郎'},
+  {id:69,name:'闇討ち',rank:'A',type:'固有',kind:'能動',prob:'45%',effect:'1ターンの準備後、敵軍大将に兵刃ダメージ（ダメージ率166%→332%）',source:'遠藤直経'},
+  {id:70,name:'敵陣攪乱',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体に計略ダメージ（ダメージ率73%→146%、知略依存）。1ターンの間、対象に混乱（攻撃と戦法の発動対象をランダムに選択）を付与',source:'新発田重家'},
+  {id:71,name:'驍勇善戦',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'1��ーンの準備後、2ターンの間自身が20%→40%の会心（発動時、兵刃ダメージが50%上昇）を獲得し、敵軍単体に兵刃ダメージ（ダメージ率156%→312%）',source:'磯野員昌'},
+  {id:72,name:'一六勝負',rank:'A',type:'固有',kind:'能動',prob:'40%',effect:'ランダムにいずれか1つの効果を発動：敵軍単体に計略ダメージ（ダメージ率120%→240%、知略依存）を与えるか、自軍単体の兵力を回復（回復率120%→240%、知略依存）',source:'横山喜内'},
+  {id:73,name:'岐阜侍従',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ（ダメージ率74%→148%）と計略ダメージ（ダメージ率74%→148%、知略依存）。自身の武勇と知略ともに対象より高い場合は強化効果を獲得し、ダメージ率が85%→170%に増加',source:'池田輝政'},
+  {id:74,name:'甲州流軍学',rank:'A',type:'固有',kind:'能動',prob:'35%',effect:'敵軍単体に計略ダメージ（ダメージ率93%→186%、知略依存）を与え、1ターンの間、友軍単体に1回分の鉄壁（被ダメージ無効）を付与',source:'小幡景憲'},
+  {id:75,name:'薙ぎ払い',rank:'B',type:'固有',kind:'能動',prob:'50%',effect:'敵軍単体に兵刃ダメージ（ダメージ率62.5%→125%）',source:'小早川秀秋'},
+  {id:76,name:'挑発',rank:'B',type:'固有',kind:'能動',prob:'30%→60%',effect:'1ターンの間、敵軍全体に挑発を付与して自身をその攻撃対象に固定',source:'内藤信成'},
+  {id:77,name:'看破',rank:'B',type:'固有',kind:'能動',prob:'25%',effect:'敵軍単体の強化効果を解除し、2ターンの間、対象の知略が9→18低下',source:'杉浦玄任'},
+  {id:78,name:'放火',rank:'B',type:'固有',kind:'能動',prob:'35%',effect:'3ターンの間、敵軍単体を火傷にし、毎ターン持続ダメージを与える（ダメージ率35%→70%、知略依存）',source:'本庄実乃'},
+  {id:79,name:'殿軍',rank:'B',type:'固有',kind:'能動',prob:'25%',effect:'2ターンの間、自身の武勇が15→30増加、自身が副将の場合は追加で統率が20→40増加',source:'遠藤基信'},
+  {id:80,name:'火攻め',rank:'B',type:'固有',kind:'能動',prob:'40%',effect:'敵軍単体に計略ダメージ（ダメージ率75%→150%）',source:'筒井順慶'},
+  {id:81,name:'刺突',rank:'B',type:'固有',kind:'能動',prob:'40%',effect:'3ターンの間、敵軍単体に潰走（毎ターン持続ダメージ。ダメージ率35%→70%、武勇依存）を付与',source:'河尻秀隆'},
+  {id:82,name:'同討',rank:'B',type:'固有',kind:'能動',prob:'30%',effect:'1ターンの準備後、敵軍複数（2名）に兵刃ダメージ（ダメージ率77.5%→155%）',source:'織田信雄'},
+  {id:83,name:'対話',rank:'B',type:'固有',kind:'能動',prob:'23%→45%',effect:'3ターンの間、自軍単体に混乱に対する「耐性」効果を付与',source:'林秀貞'},
+  {id:84,name:'救援',rank:'B',type:'固有',kind:'能動',prob:'40%',effect:'2ターンの間、自軍単体に回生（ダメージを受けるたびに50%の確率で兵力を一定量回復。回復率37.5%→75%、知略依存）を付与',source:'不破光治'},
+  {id:85,name:'威圧',rank:'B',type:'固有',kind:'能動',prob:'25%',effect:'2ターンの間、敵軍複数（2名）の与ダメージが7.5%→15%低下',source:'口羽通良'},
+  {id:86,name:'重撃',rank:'B',type:'固有',kind:'能動',prob:'35%',effect:'3ターンの間、敵軍単体に水攻めを付与し、毎ターン持続ダメージを与える（ダメージ率35%→70%、知略依存）',source:'本願寺教如'},
+  {id:87,name:'反撃',rank:'B',type:'固有',kind:'能動',prob:'35%',effect:'1ターンの間、反撃（通常攻撃を受けるたびに攻撃者にダメージを与え、ダメージ率30%→60%）を獲得',source:'真田大助'},
+  {id:88,name:'紅蓮の炎',rank:'S',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの準備後、敵軍全体に計略ダメージ（ダメージ率52%→104%、知略依存）を与え、2ターンの間、対象に火傷状態を付与し、毎ターン持続ダメージを与える（ダメージ率37%→74%、知略依存）',source:'織田信長'},
+  {id:89,name:'水攻干計',rank:'S',type:'伝授',kind:'能動',prob:'30%',effect:'1ターンの準備後、2ターンの間、敵軍全体に水攻め（毎ターン持続ダメージ。ダメージ率49%→98%、知略依存）と回復不可（兵力を回復不能）を付与',source:'豊臣秀吉'},
+  {id:90,name:'所領役帳',rank:'S',type:'伝授',kind:'能動',prob:'35%',effect:'ランダムな自軍単体を回復し（回復率106%→212%、知略依存）、2ターンの間、最も兵力が少ない自軍単体に回生を付与し、ダメージを受けるたびに25%→50%の確率で兵力を一定量回復（回復率33%→66%、知略依存）',source:'北条氏康'},
+  {id:91,name:'霹靂一撃',rank:'S',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体に114%→228%の兵刃ダメージを与え、2ターンの間麻痺（毎ターン30%の確率で行動不能）を付与。対象が麻痺状態中の場合、2ターンの間、自身が25%→50%の会心を獲得',source:'立花道雪'},
+  {id:92,name:'千軍辟易',rank:'S',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの間、敵軍全体に53%→106%の兵刃ダメージ。対象が封撃または無策状態中の場合、17.5%→35%の確率で威圧（行動不能）を付与',source:'北条綱成'},
+  {id:93,name:'一力当先',rank:'S',type:'伝授',kind:'能動',prob:'40%',effect:'2ターンの間、自身の通常攻撃ダメージが25%→50%上昇、乱舞（通常攻撃時、対象部隊の他武将へもダメージ。ダメージ率35%→70%）を獲得',source:'松平信康 / 伊達晴宗'},
+  {id:94,name:'所向無敵',rank:'S',type:'伝授',kind:'能動',prob:'30%',effect:'1ターンの準備後、敵軍全体に兵刃ダメージ（ダメージ率127%→254%）',source:'福島正則 / 加藤清正'},
+  {id:95,name:'草木皆兵',rank:'S',type:'伝授',kind:'能動',prob:'50%',effect:'1ターンの準備後、敵軍複数（2名）に計略ダメージ（ダメージ率71%→142%）を与え、自軍複数（2名）の兵力を回復（回復率53%→106%、知略依存）',source:'毛利隆元 / 山本勘助'},
+  {id:96,name:'回天転運',rank:'S',type:'伝授',kind:'能動',prob:'40%',effect:'兵力損失が最も多い自軍単体の弱体化効果を2個浄化し、その兵力を回復（回復率130%→260%、知略依存）',source:'内藤昌豊'},
+  {id:97,name:'大智不智',rank:'S',type:'伝授',kind:'能動',prob:'30%',effect:'敵軍複数（2名）に消沈を付与し、2ターンの間、毎ターン持続ダメージ（ダメージ率52%→104%、知略依存）を与え、さらに対象の兵刃被ダメージが10%→20%上昇',source:'寿桂尼 / 竹中半兵衛'},
+  {id:98,name:'前後挟撃',rank:'S',type:'伝授',kind:'能動',prob:'25%→35%',effect:'1ターンの間、自身と友軍単体は連撃（1ターンに2回通常攻撃）を獲得',source:'十河一存 / 成田甲斐'},
+  {id:99,name:'五里霧中',rank:'S',type:'伝授',kind:'能動',prob:'20%→35%',effect:'1ターンの準備後、2ターンの間、敵軍複数（2名）に混乱（攻撃と戦法の発動対象をランダムに選択）を付与。自身が女性の場合、2ターンの間、追加でその対象の被ダメージが6%上昇',source:'帰蝶'},
+  {id:100,name:'帰還の凱歌',rank:'S',type:'伝授',kind:'能動',prob:'45%',effect:'自軍複数（2名）の兵力を一定量回復（回復率66%→132%、知略依存）。対象の兵力が50%以下の場合、基本回復率が86%→172%に増加',source:'妻木煕子 / 本多正信'},
+  {id:101,name:'金鼓連天',rank:'S',type:'伝授',kind:'能動',prob:'40%',effect:'3ターンの間、自身の能動戦法与ダメージが24%→48%上昇、突撃戦法被ダメージが12.5%→25%低下（1ターン後に再発動可能）',source:'浅井長政 / 河田長親'},
+  {id:102,name:'奇謀独断',rank:'S',type:'伝授',kind:'能動',prob:'25%→35%',effect:'1ターンの準備後、2ターンの間、敵軍複数（2名）に無策（能動戦法発動不可）を付与',source:'板垣信方 / 樋口兼豊'},
+  {id:103,name:'剛毅果断',rank:'S',type:'伝授',kind:'能動',prob:'40%',effect:'3ターンの間、自身の突撃戦法の与ダメージが17.5%→35%上昇、能動戦法の被ダメージが10%→20%低下（1ターン後に再発動可能）',source:'甘利虎泰 / 小島弥太郎'},
+  {id:104,name:'陣形崩し',rank:'S',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、敵軍複数（2～3名）の統率と知略が24→48（武勇依存）減少、さらに対象に兵刃ダメージ（ダメージ率51%→102%）',source:'森可成 / 稲葉一鉄'},
+  {id:105,name:'嚢沙之計',rank:'S',type:'伝授',kind:'能動',prob:'30%',effect:'2ターンの間、敵軍複数（2名）に水攻めを付与し、毎ターン持続ダメージ（ダメージ率51%→102%、知略依存）を与え、さらに対象の計略被ダメージが15%→30%上昇',source:'高力清長 / 蜂須賀小六'},
+  {id:106,name:'槍弾正',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ（ダメージ率86%→172%）。1ターンの間、無策（能動戦法発動不可）を付与',source:'保科正俊'},
+  {id:107,name:'攻守兼備',rank:'A',type:'伝授',kind:'能動',prob:'40%',effect:'敵軍単体にダメージ（ダメージ率92%→184%、ダメージタイプは武勇と知略の高い方）。また、毎ターン最初に受ける異なるタイプの被ダメージが20%→40%低下、1ターン持続',source:'脇坂安治'},
+  {id:108,name:'殿軍奮戦',rank:'A',type:'伝授',kind:'能動',prob:'30%→55%',effect:'2ターンの間、敵軍単体に挑発（強制的に自身を通常攻撃の対象に固定）または牽制（強制的に自身を戦法の対象に固定）を付与。敵軍がすでに挑発または牽制状態中の場合、2ターンの間、追加で与ダメージが25%低下。両状態同時存在の場合、与ダメージ低下効果が45%に増加',source:'氏家卜全'},
+  {id:109,name:'鉄砲猛撃',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に計略ダメージ（ダメージ率51%→102%、知略依存）。2ターンの間、対象の与ダメージが6%→12%低下',source:'鈴木重朝'},
+  {id:110,name:'先制先登',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍複数（2名）に兵刃ダメージ（ダメージ率61%→122%）を与え、1ターンの間、先攻（優先行動）を獲得',source:'坂井政尚'},
+  {id:111,name:'鬼玄蕃',rank:'A',type:'伝授',kind:'能動',prob:'30%',effect:'自身の次に受けるダメージが20%→30%上昇する代わりに、2ターンの間、9%→18%の離反（兵刃ダメージを与えた際にダメージ量に応じて兵力回復）を獲得。さらに敵軍複数（2～3名）に兵刃ダメージ（ダメージ率59%→118%）',source:'佐久間盛政'},
+  {id:112,name:'忠勤励行',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、自軍複数（2名）の兵刃与ダメージが7.5%→15%上昇。その後、自身が敵軍単体に兵刃ダメージ（ダメージ率148%→296%）',source:'大久保忠世'},
+  {id:113,name:'援護射撃',rank:'A',type:'伝授',kind:'能動',prob:'40%',effect:'1ターンの間、友軍単体が15%→30%の回避を獲得。また、対象が初めてダメージを受けた際に自身が攻撃者に兵刃ダメージ（ダメージ率81%→162%、武勇と統率依存）',source:'水原親憲'},
+  {id:114,name:'不意打ち',rank:'A',type:'伝授',kind:'能動',prob:'20%→45%',effect:'1ターンの準備後、1～2ターンの間（65%の確率で2ターンの間）、敵軍複数（2名）にランダムに無策（能動戦法発動不可）と封撃（通常攻撃不可）のいずれかを付与',source:'池田せん'},
+  {id:115,name:'奮戦',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'自身に連撃（1ターンに2回通常攻撃）を付与するが、1ターンの間与ダメージが15%低下',source:'太田牛一 / 福留親政'},
+  {id:116,name:'有備無患',rank:'A',type:'伝授',kind:'能動',prob:'45%',effect:'自軍複数（2名）の兵力を回復（回復率54%→108%、知略依存）',source:'蜂須賀家政'},
+  {id:117,name:'生死一顧',rank:'A',type:'伝授',kind:'能動',prob:'50%',effect:'敵軍全体に計略ダメージ（ダメージ率28%→56%、知略依存）を与え、1ターンの間挑発（強制的に自身を通常攻撃の対象に固定）を付与',source:'鬼庭左月斎'},
+  {id:118,name:'弓調馬服',rank:'A',type:'伝授',kind:'能動',prob:'45%',effect:'2ターンの間、敵軍単体の武勇と知略の高い方が50→100減少。10%→20%の確率（武勇依存）で双方減少',source:'山内一豊'},
+  {id:119,name:'先陣の勇',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ（ダメージ率77%→154%）を与え、17.5%→35%の確率（速度差依存）で1ターンの間威圧（行動不能）を付与。2ターンの間、自身の速度が10→20増加',source:'下方貞清'},
+  {id:120,name:'矢石飛交',rank:'A',type:'伝授',kind:'能動',prob:'40%',effect:'敵軍単体にランダムで2～4回の兵刃ダメージ（ダメージ率42%→84%）',source:'小山田信茂'},
+  {id:121,name:'融通自在',rank:'A',type:'伝授',kind:'能動',prob:'45%',effect:'2ターンの間、友軍単体の能動戦法の発動確率が6%→12%増加（最大2回重ねがけ可能）',source:'福原貞俊'},
+  {id:122,name:'秋水一色',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間、自身と友軍単体の計略与ダメージが10%→20%上昇。その後、敵軍複数（2名）に計略ダメージ（ダメージ率74%→148%、知略依存）',source:'栗山善助'},
+  {id:123,name:'祓除',rank:'A',type:'伝授',kind:'能動',prob:'45%',effect:'2ターンの間、自軍複数（2名）の武勇・知略・速度が12→24増加、弱体化効果を2個浄化',source:'毛利輝元'},
+  {id:124,name:'妖怪退治',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体の強化効果を1個「強化解除」し、その後兵刃ダメージ（ダメージ率128%→256%）',source:'多田三八郎'},
+  {id:125,name:'闇討ち',rank:'A',type:'伝授',kind:'能動',prob:'45%',effect:'1ターンの準備後、敵軍大将に兵刃ダメージ（ダメージ率166%→332%）',source:'遠藤直経'},
+  {id:126,name:'敵陣攪乱',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体に計略ダメージ（ダメージ率73%→146%、知略依存）。1ターンの間、対象に混乱（攻撃と戦法の発動対象をランダムに選択）を付与',source:'新発田重家'},
+  {id:127,name:'驍勇善戦',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの準備後、2ターンの間自身が20%→40%の会心（発動時、兵刃ダメージが50%上昇）を獲得し、敵軍単体に兵刃ダメージ（ダメージ率156%→312%）',source:'磯野員昌'},
+  {id:128,name:'一六勝負',rank:'A',type:'伝授',kind:'能動',prob:'40%',effect:'ランダムにいずれか1つの効果を発動：敵軍単体に計略ダメージ（ダメージ率120%→240%、知略依存）を与えるか、自軍単体の兵力を回復（回復率120%→240%、知略依存）',source:'横山喜内'},
+  {id:129,name:'岐阜侍従',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体に兵刃ダメージ（ダメージ率74%→148%）と計略ダメージ（ダメージ率74%→148%、知略依存）。自身の武勇と知略ともに対象より高い場合は強化効果を獲得し、ダメージ率が85%→170%に増加',source:'池田輝政'},
+  {id:130,name:'奪気',rank:'A',type:'伝授',kind:'能動',prob:'45%',effect:'敵軍複数（2名）の強化効果を2個「強化解除」し、3ターンの間、自身の知略が14→28上昇',source:'仙石権兵衛'},
+  {id:131,name:'甲州流軍学',rank:'A',type:'伝授',kind:'能動',prob:'35%',effect:'敵軍単体に計略ダメージ（ダメージ率93%→186%、知略依存）を与え、1ターンの間、友軍単体に1回分の鉄壁（被ダメージ無効）を付与',source:'小幡景憲'},
+  {id:132,name:'薙ぎ払い',rank:'B',type:'伝授',kind:'能動',prob:'50%',effect:'敵軍単体に兵刃ダメージ（ダメージ率62.5%→125%）',source:'小早川秀秋'},
+  {id:133,name:'嘲罵',rank:'B',type:'伝授',kind:'能動',prob:'30%→60%',effect:'1ターンの間、敵軍全体に挑発を付与して自身をその攻撃対象に固定',source:'内藤信成'},
+  {id:134,name:'看破',rank:'B',type:'伝授',kind:'能動',prob:'25%',effect:'敵軍単体の強化効果を解除し、2ターンの間、対象の知略が9→18低下',source:'杉浦玄任'},
+  {id:135,name:'火計',rank:'B',type:'伝授',kind:'能動',prob:'35%',effect:'3ターンの間、敵軍単体を火傷にし、毎ターン持続ダメージを与える（ダメージ率35%→70%、知略依存）',source:'本庄実乃'},
+  {id:136,name:'殿軍',rank:'B',type:'伝授',kind:'能動',prob:'25%',effect:'2ターンの間、自身の武勇が15→30増加、自身が副将の場合は追加で統率が20→40増加',source:'遠藤基信'},
+  {id:137,name:'火攻め',rank:'B',type:'伝授',kind:'能動',prob:'40%',effect:'敵軍単体に計略ダメージ（ダメージ率75%→150%）',source:'筒井順慶'},
+  {id:138,name:'刺突',rank:'B',type:'伝授',kind:'能動',prob:'40%',effect:'3ターンの間、敵軍単体に潰走（毎ターン持続ダメージ。ダメージ率35%→70%、武勇依存）を付与',source:'河尻秀隆'},
+  {id:139,name:'同討',rank:'B',type:'伝授',kind:'能動',prob:'30%',effect:'1ターンの準備後、敵軍複数（2名）に兵刃ダメージ（ダメージ率77.5%→155%）',source:'織田信雄'},
+  {id:140,name:'会話',rank:'B',type:'伝授',kind:'能動',prob:'23%→45%',effect:'3ターンの間、自軍単体に混乱に対する「耐性」効果を付与',source:'林秀貞'},
+  {id:141,name:'救援',rank:'B',type:'伝授',kind:'能動',prob:'40%',effect:'2ターンの間、自軍単体に回生（ダメージを受けるたびに50%の確率で兵力を一定量回復。回復率37.5%→75%、知略依存）を付与',source:'不破光治'},
+  {id:142,name:'威圧',rank:'B',type:'伝授',kind:'能動',prob:'25%',effect:'2ターンの間、敵軍複数（2名）の与ダメージが7.5%→15%低下',source:'口羽通良'},
+  {id:143,name:'水計',rank:'B',type:'伝授',kind:'能動',prob:'35%',effect:'3ターンの間、敵軍単体に水攻めを付与し、毎ターン持続ダメージを与える（ダメージ率35%→70%、知略依存）',source:'本願寺教如'},
+  {id:144,name:'反撃',rank:'B',type:'伝授',kind:'能動',prob:'35%',effect:'1ターンの間、反撃（通常攻撃を受けるたびに攻撃者にダメージを与え、ダメージ率30%→60%）を獲得',source:'真田大助'},
+  {id:145,name:'機に乗ず',rank:'S',type:'事件',kind:'突撃',prob:'35%',effect:'通常攻撃後、攻撃対象の武勇と知略を70→140低下させる。対象が既に挑発または牽制状態の場合、自身は17.5%→35%の回避状態を獲得する。そうでない場合、攻撃対象に挑発と牽制状態を付与し、1ターン持続',source:'今川家・星5×1/徳川家・星5×1'},
+  {id:146,name:'乱世の華',rank:'S',type:'伝授',kind:'突撃',prob:'40%',effect:'通常攻撃後、攻撃対象にもう一度兵刃ダメージ （ダメージ率79%→158%）と計略ダメージ（ダメージ率79%→158%、知略依存）を与える、このダメージは双方の属性差の影響を受ける（兵力ダメージは武勇・統率、計略ダメージは知略・速度が影響）',source:'前田慶次 / 高橋紹運'},
+  {id:147,name:'境目奮戦',rank:'S',type:'伝授',kind:'突撃',prob:'35%',effect:'通常攻撃後、兵力の最も低い敵軍単体に計略ダメージ（ダメージ率130%→260%、知略依存）を与え、その敵軍が受ける回復効果を15%→30%低下させる。1ターン持続',source:'相馬盛胤 / 里見義堯'},
+  {id:148,name:'仁者の沈勇',rank:'S',type:'固有',kind:'突撃',prob:'55%',effect:'通常攻撃後、敵軍単体に計略ダメージ（ダメージ率92%→184%、知略依存）を与え、70%の確率で友軍単体にも同時に同対象への計略ダメージ（ダメージ率77%→154%、その友軍の知略依存）を与える。',source:'里見義堯'},
+  {id:149,name:'天下御免',rank:'S',type:'固有',kind:'突撃',prob:'35%→65%',effect:'通常攻撃後、対象に追加で兵刃ダメージ（ダメージ率188%）を与える。敵軍の大将に命中した場合、対象に混乱状態（攻撃や戦法の対象を無差別化）を付与し、2ターン持続。敵軍の大将が既に混乱状態の場合、その主要属性を30（武勇依存）吸収する。戦闘終了まで重ねがけ可能',source:'前田慶次'},
+  {id:150,name:'海道一',rank:'S',type:'固有',kind:'突撃',prob:'35%→70%',effect:'通常攻撃後、射撃を2回行い、それぞれランダムな敵軍単体への兵刃ダメージ（ダメージ率134%）と計略ダメージ（ダメージ率134%・知略依存）。射撃後、自身の統率6%低下。統率低下した分だけ武勇と知略が増加（最大8回重ねがけ、解除不可）。',source:'今川義元'},
+  {id:151,name:'電光雷轟',rank:'S',type:'固有',kind:'突撃',prob:'30%→65%',effect:'通常攻撃後、対象とランダムな敵単体に麻痺付与（2ターン、毎ターン30%で行動不能）。対象が麻痺中の場合、雷鳴発動（敵軍全体への兵刃ダメージ、ダメージ率52%）。さらに麻痺でない敵軍単体に麻痺付与 この戦法は1ターンに最大1回発動可',source:'立花道雪'},
+  {id:152,name:'鬼小島',rank:'S',type:'固有',kind:'突撃',prob:'30%→55%',effect:'通常攻撃後、対象に兵刃ダメージ（ダメージ率304%）。この戦法が発動するたびに、発動率が5%減少（最大4回まで）',source:'小島弥太郎'},
+  {id:153,name:'剛の武者',rank:'S',type:'固有',kind:'突撃',prob:'35%',effect:'通常攻撃後、攻撃対象に兵刃ダメージ（ダメージ率123%→246%）を与え、2ターンの間、その次の計略与ダメージが37.5%→75%低下',source:'甘利虎泰'},
+  {id:154,name:'楼岸一番',rank:'S',type:'固有',kind:'突撃',prob:'40%',effect:'通常攻撃後、攻撃対象にダメージ（ダメージ率84%→168%、ダメージタイプは武勇と知略の高い方）。1ターンの間、対象の与ダメージが15%→30%低下（武勇と知略の高い方に依存）。対象の兵力が50%超過の場合、与ダメージ低下効果の持続時間は2ターンに増加',source:'蜂須賀小六'},
+  {id:155,name:'鬼十河',rank:'S',type:'固有',kind:'突撃',prob:'20%→35%',effect:'通常攻撃後、対象に兵刃ダメージ（ダメージ率188%）。さらに1ターンの間威圧を付与',source:'十河一存'},
+  {id:156,name:'回山倒海',rank:'S',type:'固有',kind:'突撃',prob:'35%',effect:'通常攻撃後、敵軍単体に兵刃ダメージ（ダメージ率52%→104%）を与え、さらに対象に2ターンの間潰走（毎ターン持続ダメージ、ダメージ率47%→94%、武勇依存）を付与',source:'甘粕景継'},
+  {id:157,name:'一刀両断',rank:'A',type:'固有',kind:'突撃',prob:'30%',effect:'通常攻撃後、攻撃対象にもう一度兵刃ダメージ（ダメージ率158%→316%）',source:'池田恒興'},
+  {id:158,name:'荒切',rank:'A',type:'固有',kind:'突撃',prob:'20%→35%',effect:'通常攻撃後、1ターンの間連撃（1ターンに2回通常攻撃）を獲得',source:'福留親政'},
+  {id:159,name:'一触即発',rank:'A',type:'固有',kind:'突撃',prob:'40%',effect:'通常攻撃後、1ターンの間攻撃対象の統率が70→140減少、無策（能動戦法発動不可）を付与',source:'武田義信'},
+  {id:160,name:'槍の鈴',rank:'A',type:'固有',kind:'突撃',prob:'35%',effect:'通常攻撃後、敵軍単体に兵刃ダメージ（ダメージ率116%→232%）。3ターン目以降、追加で自身の兵力を回復（回復率27%→54%、武勇依存）',source:'国司元相'},
+  {id:161,name:'連戦',rank:'B',type:'固有',kind:'突撃',prob:'35%',effect:'通常攻撃後、敵軍単体に兵刃ダメージ（ダメージ率60%→120%）',source:'色部勝長'},
+  {id:162,name:'不退転',rank:'B',type:'固有',kind:'突撃',prob:'30%',effect:'通常攻撃後、攻撃対象にもう一度兵刃ダメージ（ダメージ率70%→140%）',source:'長野業盛'},
+  {id:163,name:'破甲',rank:'B',type:'固有',kind:'突撃',prob:'55%',effect:'通常攻撃後、2ターンの間攻撃対象の統率が18→36減少',source:'金森長近'},
+  {id:164,name:'猛撃',rank:'B',type:'固有',kind:'突撃',prob:'45%',effect:'通常攻撃後、2ターンの間、自身が7.5%→15%の会心を獲得（発動時、兵刃ダメージが50%上昇）',source:'松平忠直'},
+  {id:165,name:'理非曲直',rank:'S',type:'伝授',kind:'突撃',prob:'25%→35%',effect:'通常攻撃後、対象にもう一度兵刃ダメージ（ダメージ率192%）を与え、1ターンの間混乱を付与（攻撃と戦法の発動対象をランダムに選択）',source:'斎藤義龍 / 陶晴賢'},
+  {id:166,name:'乗勝追撃',rank:'S',type:'伝授',kind:'突撃',prob:'30%',effect:'通常攻撃後、敵軍全体にもう一度兵刃ダメージ（ダメージ率68%→136%）',source:'甘粕景持'},
+  {id:167,name:'戦意崩壊',rank:'S',type:'伝授',kind:'突撃',prob:'20%→35%',effect:'通常攻撃後、2ターンの間、対象の統率と知略が65低下し、自軍大将に2回分の鉄壁（被ダメージ無効）を付与。自身が大将の場合は1回分の鉄壁しか獲得不可',source:'諏訪姫 / 仙桃院'},
+  {id:168,name:'回山倒海',rank:'A',type:'伝授',kind:'突撃',prob:'35%',effect:'通常攻撃後、敵軍単体に兵刃ダメージ（ダメージ率52%→104%）を与え、さらに対象に2ターンの間潰走（毎ターン持続ダメージ、ダメージ率47%→94%、武勇依存）を付与',source:'甘粕景継'},
+  {id:169,name:'一刀両断',rank:'A',type:'伝授',kind:'突撃',prob:'30%',effect:'通常攻撃後、攻撃対象にもう一度兵刃ダメージ（ダメージ率158%→316%）',source:'池田恒興'},
+  {id:170,name:'一触即発',rank:'A',type:'伝授',kind:'突撃',prob:'40%',effect:'通常攻撃後、1ターンの間攻撃対象の統率が70→140減少、無策（能動戦法発動不可）を付与',source:'武田義信'},
+  {id:171,name:'槍の鈴',rank:'A',type:'伝授',kind:'突撃',prob:'35%',effect:'通常攻撃後、敵軍単体に兵刃ダメージ（ダメージ率116%→232%）。3ターン目以降、追加で自身の兵力を回復（回復率27%→54%、武勇依存）',source:'国司元相'},
+  {id:172,name:'連戦',rank:'B',type:'伝授',kind:'突撃',prob:'35%',effect:'通常攻撃後、敵軍単体に兵刃ダメージ（ダメージ率60%→120%）',source:'色部勝長'},
+  {id:173,name:'不退転',rank:'B',type:'伝授',kind:'突撃',prob:'30%',effect:'通常攻撃後、攻撃対象にもう一度兵刃ダメージ（ダメージ率70%→140%）',source:'長野業盛'},
+  {id:174,name:'破甲',rank:'B',type:'伝授',kind:'突撃',prob:'55%',effect:'通常攻撃後、2ターンの間攻撃対象の統率が18→36減少',source:'金森長近'},
+  {id:175,name:'猛撃',rank:'B',type:'伝授',kind:'突撃',prob:'45%',effect:'通常攻撃後、2ターンの間、自身が7.5%→15%の会心を獲得（発動時、兵刃ダメージが50%上昇）',source:'松平忠直'},
+  {id:176,name:'大器の萌芽',rank:'A',type:'事件',kind:'指揮',prob:'100%',effect:'5ターン目以降、毎ターン自軍複数（2人）の兵力を回復（回復率54%→108%、知略依存）',source:'織田家・星4×10'},
+  {id:177,name:'知者楽水',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'戦闘開始後の3ターンの間、自軍複数（2人）が受ける兵刃及び計略ダメージを9%→18%から12%→24%（統率依存。武勇より知略の方が高い味方武将が多い場合は兵刃ダメージ軽減率が上がり、そうでない場合は計略ダメージ軽減率が上がる） 軽減させる。ただし、その...',source:'黒田官兵衛'},
+  {id:178,name:'末世の道者',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、知略の最も高い自軍武将の計略ダメージを7%→14%（統率依存）増加させ、7%→14%の心攻状態を付与する。ただし、武勇の最も高い自軍武将の武勇を10%低下させる',source:'大内義隆'},
+  {id:179,name:'諸行無常',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘開始後の3ターンの間、自軍全体の与ダメージを12%→24%（知略依存）上昇させる。4ターン目以降、自身及び敵軍単体が毎ターン周囲に与えるダメージを28%→56%（知略依存）低下させる。3ターン持続',source:'瑞溪院'},
+  {id:180,name:'新生',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、友軍複数（2名）の与ダメージが7%→14%（統率依存）上昇',source:'織田信長'},
+  {id:181,name:'風林火山',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、2ターンごとに風・林・火・山の順でで旗効果発動。 最初のターンの旗は自身の最も高い属性で決定（速度＝風、知略＝林、武勇＝火、統率＝山）。 風：自軍複数（2～3名）の兵刃与ダメージが11%→22%増加（速度依存） 林：敵軍複数（2～3名）に計略ダメ...',source:'武田信玄'},
+  {id:182,name:'三河魂',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'友軍複数（2名）が通常攻撃を受けると、攻撃者の全属性に1.25%→2.5%（統率依存）の低下効果を付与（最大8回まで重ねがけ可能）',source:'徳川家康'},
+  {id:183,name:'百万一心',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、敵軍複数（2名。7.5%→15%の確率で敵軍全体を選択）が能動戦法発動するたびに、15%→30%の確率で発動を阻止し、計略ダメージ（ダメージ率100%、知略依存）',source:'毛利元就'},
+  {id:184,name:'千成瓢箪',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'毎ターン自軍複数（2名）を回復し（回復率38%→76%、知略依存）、17.5%→35%の確率で自軍全体を回復',source:'豊臣秀吉'},
+  {id:185,name:'鬼若子',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'4ターン目まで、自軍複数（2～3名）は25%→50%の連撃を獲得し、統率が9→18（統率依存）増加',source:'長宗我部元親'},
+  {id:186,name:'比翼連理',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、自軍全体が戦法で回復を付与するたびに、回復量の75%を蓄積。大将の行動が終了するたびに40%→80%の確率で敵軍複数（1～2名）に計略ダメージ（ダメージ率46%→92%、知略と回復の蓄積量依存）を与え、蓄積された回復量をリセット',source:'ねね'},
+  {id:187,name:'越後流軍学',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、自身の能動戦法の発動確率が10%→20%増加。能動戦法を発動するたびに、25%→50%の確率（知略依存）で自軍全体に2ターンの間、封撃、無策、威圧、疲弊のいずれかの状態に対する耐性をランダムに付与（未獲得状態優先）',source:'宇佐美定満'},
+  {id:188,name:'非常の器',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'2ターン目まで、自軍全体が17.5%→35%の回避（ダメージを無効化）を獲得。さらに3ターン目開始時から3ターンの間、自軍全体が休養（毎ターン兵力が1回回復、回復率33%→66%、知略依存）を獲得',source:'本多正信'},
+  {id:189,name:'献身',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、自身の行動時に22%→44%の確率（知略依存）で自軍異性が次の攻撃で追加でランダムな敵軍単体に兵刃ダメージ（ダメージ率131%→262%）。そのターン中、自身への被ダメージが20%上昇',source:'仙桃院'},
+  {id:190,name:'耐苦鍛錬',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、自身が通常攻撃を受けた際に自身の武勇と統率が7→14増加（5回まで重ねがけ可能）。最大重ねがけ数に達すると、敵軍全体に兵刃ダメージ（ダメージ率80%→160%）。3ターン目まで、自軍大将を援護',source:'千坂景親'},
+  {id:191,name:'内助の賢',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、友軍複数（2名）が継続状態を付与する際、その継続時間が25%→50%の確率（知略依存）で1ターン増加。偶数ターンに敵軍全体が継続状態中の場合、自軍全体の兵力を回復（回復率48%→96%、知略依存）',source:'妻木煕子'},
+  {id:192,name:'尼御台',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'2ターン目まで、自軍大将は洞察を獲得し、被ダメージが9%→18%（知略依存）低下。効果終了後、4ターンの間、12%→24%（知略依存）の離反・心攻を獲得',source:'寿桂尼'},
+  {id:193,name:'月華鶴影',rank:'S',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、友軍複数（2名）が通常攻撃を受けると35%の確率で敵軍複数に兵刃ダメージ（ダメージ率51%→102%）。友軍が通常攻撃を4回受けるたびに、自身が12.5%→25%の会心を獲得（2回まで重ねがけ可能）',source:'大祝鶴'},
+  {id:194,name:'警戒周到',rank:'A',type:'固有',kind:'指揮',prob:'100%',effect:'4ターン目まで、自軍複数（2名）の被ダメージが11%→22%低下',source:'三枝昌貞'},
+  {id:195,name:'捨て身の義',rank:'A',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、自身の統率が20→40増加し、友軍複数の武勇と知略が10→20増加。自身の兵力が20%低下するたびに、再度効果を発動（効果は元の60%、重ねがけ可能）',source:'鳥居元忠'},
+  {id:196,name:'懐柔',rank:'A',type:'固有',kind:'指揮',prob:'100%',effect:'2ターン目から3ターンの間、自軍複数（2～3名）が休養（毎ターン兵力回復）を獲得（回復率42%→84%、知略依存）',source:'岩城親隆'},
+  {id:197,name:'参謀の助言',rank:'A',type:'固有',kind:'指揮',prob:'100%',effect:'自軍全体の武勇と知略が14→28増加',source:'小山田茂誠'},
+  {id:198,name:'後方支援',rank:'A',type:'固有',kind:'指揮',prob:'100%',effect:'戦闘中、自身の能動戦法の発動確率が5%→10%減少するが、友軍複数（2名）に9%→18%の与ダメージ上昇効果を付与。この効果は毎ターン20%→40%の確率で2%減少',source:'毛利輝元'},
+  {id:199,name:'覇王の右筆',rank:'A',type:'固有',kind:'指揮',prob:'100%',effect:'友軍複数（2名）が通常攻撃を行った後、自身は20%→40%の確率でその対象に兵刃ダメージ（ダメージ率60%→120%）',source:'太田牛一'},
+  {id:200,name:'一領具足',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'最初の2ターンの間、自軍全体の兵力損害が6%→12%（武勇依存）低下。3～4ターン目、自身の行動前に、自軍全体が3ターン持続の傭兵（追加の部隊兵力。獲得率48%→96%、統率依存）を獲得',source:'長宗我部元親'},
+  {id:201,name:'気勢衝天',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'4ターン目まで、自身の行動時に80%の確率で1ターンの間、武勇が最も高い敵軍武将の兵刃与ダメージが15%→30%低下（武勇依存）、知略が最も高い敵軍武将の計略与ダメージが15%→30%低下（武勇依存）',source:'榊原康政'},
+  {id:202,name:'深慮遠謀',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'3ターン目まで、敵軍複数（2名）の与ダメージが14%→28%低下（知略依存）',source:'宇佐美定満'},
+  {id:203,name:'気炎万丈',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'3ターン目まで、敵軍複数（2名）に封撃を付与し、毎ターン35%→70%の確率で通常攻撃不可（毎ターン発��確率が7%→14%減少）',source:'尼子晴久 / 岡部元信'},
+  {id:204,name:'罵詈雑言',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'3ターン目まで、敵軍複数（2～3名）に挑発（毎ターン45%→90%の確率で強制的に自身を通常攻撃の対象に固定）を付与。さらに自身が受ける通常攻撃と突撃戦法のダメージが25%→50%低下。自身が大将の場合、挑発は付与しない',source:'佐久間信盛 / 原虎胤'},
+  {id:205,name:'戦意消沈',rank:'S',type:'伝授',kind:'指揮',prob:'100%',effect:'敵軍複数（2名）に対し、1ターン目に1名へ、3ターン目にもう1名へ、疲弊を付与（2ターンの間、与ダメージを25％→50％の確率で無効）',source:'大祝鶴 / 荒木村重'},
+  {id:206,name:'警戒周到',rank:'A',type:'伝授',kind:'指揮',prob:'100%',effect:'4ターン目まで、自軍複数（2名）の被ダメージが11%→22%低下',source:'三枝昌貞'},
+  {id:207,name:'参謀の助言',rank:'A',type:'伝授',kind:'指揮',prob:'100%',effect:'自軍全体の武勇と知略が14→28増加',source:'小山田茂誠'},
+  {id:208,name:'雷神斬り',rank:'S',type:'事件',kind:'受動',prob:'100%',effect:'戦闘中、毎ターン蓄勢を1獲得する。蓄勢の回数が2以上、且つ自身が威圧状態でない場合、蓄勢回数をリセットし、25%→50%の会心状態及び60→120の武勇を獲得し、1ターン持続。また、蓄勢回数が2を超える場合、追加で12.5%→25%の会心状態及び30→6...',source:'立花道雪×1/大友家・星5×1'},
+  {id:209,name:'水の如し',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'毎ターン行動前、及び初めて戦法による回復を受けた時、24%→48%の確率（知略依存）で2.5%→5%の奇策状態を獲得する。最大8回まで重ねがけ可能。毎ターン行動前、30%→60%の確率で敵軍単体に計略ダメージ （1〜2回実行、ダメージ率44%→88%、知...',source:'黒田官兵衛'},
+  {id:210,name:'豊後の戦陣',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、自身が洞察状態を獲得し、自身の最も高い属性に応じた強化効果を獲得する（その属性に依存） 武勇：兵刃ダメージが6%→12%上昇。 知略：計略ダメージが6%→12%上昇。 統率：能動戦法の発動率が3%→6%上昇',source:'高橋紹運'},
+  {id:211,name:'武田之赤備',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、10%→20%の会心を獲得。毎ターン行動後、12.5%→25%の確率（武勇依存。このターンで会心ダメージを与えた場合、追加で12.5%→25%増加）で赤備え突撃を発動：敵軍単体に兵刃ダメージ（ダメージ率69%→138%）を与え、2ターンの間、次の...',source:'山県昌景'},
+  {id:212,name:'軍神',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、乱舞獲得不可。 友軍複数（2名）が通常攻撃・能動戦法・突撃戦法発動時、30%→60%の確率（武勇依存）で溜め獲得：自身の通常攻撃ダメージ5%→10%上昇（武勇依存）。溜めは12回まで重ねがけ可能。最大重ねがけ時、通常攻撃の与ダメージ70%→140...',source:'上杉謙信'},
+  {id:213,name:'鬼美濃',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'ダメージを受けると、17.5%→35%の確率で自身の弱体化効果を浄化し、自身の兵力を回復（回復率56%→112%、統率依存）',source:'馬場信春'},
+  {id:214,name:'一切皆空',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'2ターン目以降、30%の確率（毎ターン発動の確率が40%増加）で一揆を発動。一揆発動後の1ターン、自身は毎ターン行動時に80%～90%の確率（発動時のターン数依存）で敵軍複数（2～3名）に一揆（ダメージ率36%→72%、武勇と知略の高い方に依存、防御無視...',source:'本願寺顕如'},
+  {id:215,name:'古今独歩',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'通常攻撃を受けると24%→48%の確率で攻撃者に兵刃ダメージ（ダメージ率35%→70%、通常攻撃効果と突撃を発動可能）を与え、2%→4%の離反を獲得（最大8回まで重ねがけ可能）',source:'本多忠勝'},
+  {id:216,name:'槍の又左',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、能動戦法を発動するたびに、45%→90%の確率で、次のターンの行動時までに自身が1回分の鉄壁を獲得（すでにこの戦法で付与された場合は回数増加）。鉄壁の獲得判定が2回行われるたびに、自身の次の通常攻撃を強化：通常攻撃与ダメージが50%上昇し、攻撃対...',source:'前田利家'},
+  {id:217,name:'破竹の勢い',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、自身が35%→70%の会心を獲得し、会心ダメージ率が15%→30%増加。会心ダメージを与えると、自身の会心ダメージが2.5%→5%増加（最初の1回を除き最大10回重ねがけ可能）',source:'加藤清正'},
+  {id:218,name:'東国無双の麗',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、自身は連撃（1ターンに2回通常攻撃）を獲得し、自身の武勇が3→30増加',source:'成田甲斐'},
+  {id:219,name:'帰蝶の舞',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、奇数ターンに20%→40%の確率（知略依存）で1ターンの間、敵軍複数（2名）の統率と知略が11%→22%（知略依存）低下。偶数ターンに19%→38%の確率（知略依存）で1ターンの間、敵軍複数（2名）に混乱を付与',source:'帰蝶'},
+  {id:220,name:'夜叉美濃',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、自身の被ダメージが17.5%→35%低下（敵軍が騎兵・鉄砲部隊の場合は25%→50%）',source:'原虎胤'},
+  {id:221,name:'七本槍筆頭',rank:'S',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、自身は46%→92%の乱舞（通常攻撃時、対象部隊の他武将へもダメージ）を獲得。毎ターン15%→30%の確率で自身の通常攻撃を統率が最も低い敵軍単体にロック、発動すると1ターンの間に持続。兵刃ダメージを5回与えるたびに、発動確率が6.5%→13%増...',source:'福島正則'},
+  {id:222,name:'一念乱志',rank:'A',type:'固有',kind:'受動',prob:'100%',effect:'3ターン目以降、自身は35%→70%の確率で敵軍単体に兵刃ダメージ（ダメージ率89%→178%）を与え、35%の確率で武勇が最も高い友軍単体も同じ対象に兵刃ダメージ（ダメージ率89%→178%）。自身の発動確率は毎ターン2.5%→5%減少',source:'九戸政実'},
+  {id:223,name:'一上一下',rank:'A',type:'固有',kind:'受動',prob:'100%',effect:'戦闘中、自身の能動戦法の発動確率が6%→12%増加',source:'安藤守就'},
+  {id:224,name:'魚目混珠',rank:'A',type:'固有',kind:'受動',prob:'100%',effect:'自身は通常攻撃ができず、与ダメージが25%→50%低下するが、毎ターン食事で自身の兵力を回復（回復率106%→212%）',source:'吉川広家'},
+  {id:225,name:'全力戦闘',rank:'A',type:'固有',kind:'受動',prob:'100%',effect:'5ターン目以降、戦闘終了まで自身が35%→70%の連撃（1ターンに2回通常攻撃）を獲得',source:'斎藤利三'},
+  {id:226,name:'腹中鱗甲',rank:'A',type:'固有',kind:'受動',prob:'100%',effect:'自身が反撃（通常攻撃を受けると、敵軍に兵刃ダメージ。ダメージ率26%→52%）を獲得。自身が大将でない場合、ダメージ率は31%→62%に上昇',source:'結城秀康'},
+  {id:227,name:'鈴鳴り',rank:'A',type:'固有',kind:'受動',prob:'100%',effect:'自身は毎ターン33%→66%の確率で敵軍単体に兵刃ダメージ（ダメージ率105%→210%）。自軍の兵力が50%以下かつ敵軍より低い場合、発動確率は元の50%に低下',source:'仙石権兵衛'},
+  {id:228,name:'奮起',rank:'B',type:'固有',kind:'受動',prob:'100%',effect:'自身の武勇と速度が12.5→25増加',source:'色部長実'},
+  {id:229,name:'御旗楯無',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身がダメージを受けると20%→40%の確率（武勇依存）で、今回の被ダメージが20%→40%（知略依存）低下。また、自身が通常攻撃を受けると20%→40%の確率（統率依存）で、友軍単体が攻撃者に兵刃ダメージ（ダメージ率47%→94%）',source:'武田信玄'},
+  {id:230,name:'盤石耽々',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身の被ダメージが（4.5%→9%、統率依存）低下。毎ターン、効果増加（2%→4%、統率依存、重ねがけ可能）',source:'徳川家康'},
+  {id:231,name:'運勝の鼻',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、準備ターンが必要な固有能動戦法発動時、37.5%→75%の確率で準備時間を1ターンスキップ。スキップに失敗した場合、3ターンの間発動確率が5%→10%増加',source:'毛利元就'},
+  {id:232,name:'七十二の計',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身は25%→50%の奇策（発動時に計略ダメージが50%増加）を獲得し、奇策ダメージ率が15%→30%増加。奇策ダメージを7回与えた後、追加で敵軍全体に計略ダメージ（ダメージ率60%→120%、知略依存）',source:'明智光秀'},
+  {id:233,name:'毘沙門天',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身の行動が終了するたびに20%→40%の確率（武勇依存）で自軍複数（2～3名）を回復（回復率27%→54%、武勇依存）。さらに1ターンの間、敵軍複数（2～3名）の与ダメージが4.5%→9%低下（双方の武勇の差に依存）',source:'上杉謙信'},
+  {id:234,name:'独立独歩',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身の突撃戦法の発動確率が8.5%→17%増加',source:'今川義元'},
+  {id:235,name:'一行三昧',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身の能動戦法の発動確率が7%→14%増加',source:'本願寺顕如 / 松永久秀'},
+  {id:236,name:'以戦養戦',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身は12.5%→25%の離反（兵刃ダメージを与えた際にダメージ量に応じて兵力回復）を獲得。5ターン目にもう1回12.5%→25%の離反を獲得。自身の兵力が50%以下の場合、追加で12.5%→25%の会心を獲得',source:'馬場信春'},
+  {id:237,name:'血戦奮闘',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'自身の被回復効果が30%→60%上昇、さらに20%→40%の会心を獲得',source:'本多忠勝 / 柴田勝家'},
+  {id:238,name:'文武両道',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身は計略ダメージを与えるたびに武勇が15→30増加（最大5回まで重ねがけ可能）、兵刃ダメージを与えるたびに知略が15→30増加（最大5回まで重ねがけ可能）',source:'安東愛季'},
+  {id:239,name:'沈魚落雁',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'自身が通常攻撃を受けた際、18%→36%の確率で1ターンの間、攻撃者に以下の状態を1つ付与：混乱（攻撃と戦法の目標ランダムに選択）、無策（能動戦法が発動不能）、疲弊（与ダメージが無効）。自身が女性の場合、発動確率は追加で魅力依存',source:'お市 / ねね'},
+  {id:240,name:'按甲休兵',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身は休養（毎ターン兵力回復、回復率70%→140%）を獲得',source:'朝倉義景 / 千坂景親'},
+  {id:241,name:'百戦錬磨',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身の武勇・知略・統率・速度が21→42増加',source:'南部晴政 / 太田資正'},
+  {id:242,name:'死中求活',rank:'S',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身は兵刃ダメージを受けるたびに武勇が2.5→5増加（最大10回まで重ねがけ可能）。5ターン目に、敵軍全体に兵刃ダメージ（ダメージ率62.5%→125%、1回重ねがけにつきダメージが追加で6%→12%増加）',source:'可児才蔵 / 明智秀満'},
+  {id:243,name:'一念乱志',rank:'A',type:'伝授',kind:'受動',prob:'100%',effect:'3ターン目以降、自身は35%→70%の確率で敵軍単体に兵刃ダメージ（ダメージ率89%→178%）を与え、35%の確率で武勇が最も高い友軍単体も同じ対象に兵刃ダメージ（ダメージ率89%→178%）。自身の発動確率は毎ターン2.5%→5%減少',source:'九戸政実'},
+  {id:244,name:'一上一下',rank:'A',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身の能動戦法の発動確率が6%→12%増加',source:'安藤守就'},
+  {id:245,name:'休養',rank:'A',type:'伝授',kind:'受動',prob:'100%',effect:'戦闘中、自身は休養（毎ターン兵力回復、回復率50%→100%）を獲得',source:'岩城親隆 / 吉川広家'},
+  {id:246,name:'百錬成鋼',rank:'A',type:'伝授',kind:'受動',prob:'100%',effect:'自身の武勇・知略・統率・速度が17.5→35増加',source:'鳥居元忠'},
+  {id:247,name:'全力戦闘',rank:'A',type:'伝授',kind:'受動',prob:'100%',effect:'5ターン目以降、戦闘終了まで自身が35%→70%の連撃（1ターンに2回通常攻撃）を獲得',source:'斎藤利三'},
+  {id:248,name:'腹中鱗甲',rank:'A',type:'伝授',kind:'受動',prob:'100%',effect:'自身が反撃（通常攻撃を受けると、敵軍に兵刃ダメージ。ダメージ率26%→52%）を獲得。自身が大将でない場合、ダメージ率は31%→62%に上昇',source:'結城秀康'},
+  {id:249,name:'奮起',rank:'B',type:'伝授',kind:'受動',prob:'100%',effect:'自身の武勇と速度が12.5→25増加',source:'色部長実'},
+  {id:250,name:'母衣武者',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'騎兵が、剛勇無双の母衣武者に進化。自軍全体の速度が10→20増加し、通常攻撃を与えるたびに、対象の被ダメージが1.5%→3%上昇（速度依存）（最大5回まで重ねがけ可能）。前田利家が装備時、被ダメージの基本増加率が1.8%→3.5%に増加',source:'前田利家'},
+  {id:251,name:'甲斐弓騎兵',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'弓兵が、精妙な射術を誇る甲斐弓騎兵に進化。部隊行軍速度が5%→50%増加。自軍全体の配置順が一番目となる能動戦法発動率4%→8%上昇（準備が必要な戦法は6%→12%上昇）。一条信龍が装備時、発動率増加値は速度依存',source:'一条信龍'},
+  {id:252,name:'赤備え隊',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'騎兵が、横掃千軍の赤備え隊に進化。自軍全体が17.5%→35%の会心（発動時、兵刃ダメージが50%増加）を獲得。飯富虎昌が装備時、自軍全体が会心ダメージを計10回与えると全軍出撃（自軍全体がそれぞれランダムな敵軍単体に兵刃ダメージ、ダメージ率44%→88...',source:'飯富虎昌'},
+  {id:253,name:'三河弓兵隊',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'弓兵が、百発百中の三河弓兵隊に進化。自軍全体の統率が10→20増加。3ターン目まで、自軍は回生を獲得し、ダメージを受けるたびに17.5%→35%の確率で兵力が一定量回復（回復率32.5%→65%、統率依存）。酒井忠次が装備時、発動確率はさらに統率依存で増加',source:'酒井忠次'},
+  {id:254,name:'薩摩鉄砲兵',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'鉄砲が、鉄火烈襲の薩摩鉄砲兵に進化。自軍全体の通常攻撃が計略攻撃へ転換。基本ダメージ率が20%→40%増加するが、攻撃した後、1ターン後に再発動可能。島津貴久が装備時、基本ダメージ率は30%→60%まで増加',source:'島津貴久'},
+  {id:255,name:'鉄砲僧兵',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'鉄砲が、破邪顕正の鉄砲僧兵に進化。自軍全体の統率と知略が6→12増加し、1/2/5/6ターン目に休養（毎ターン兵力を1回回復、回復率24%→48%、統率依存）を獲得。津田算長が装備時、属性増加値は統率依存でさらに増加',source:'津田算長'},
+  {id:256,name:'大太刀力士隊',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'足軽が、臨戦態勢の大太刀力士隊に進化。自軍全体は通常攻撃ダメージを受けた際に15%→30%の確率で攻撃者に反撃（ダメージ率50%→100%）を付与。2ターン目まで、通常攻撃と突撃戦法による被ダメージが9%→18%（武勇依存）低下。真柄直隆が装備時、反撃時...',source:'真柄直隆'},
+  {id:257,name:'僧兵',rank:'S',type:'伝授',kind:'兵種',prob:'100%',effect:'足軽が、不退転の僧兵に進化。自軍全体の兵刃被ダメージが10%→20%（統率依存）低下。ただし、弱体化効果継続中の場合は追加で毎ターン兵力が損失（ダメージ率30%→60%、火傷状態中は120%→240%に増加）。宮部継潤が装備時、火傷以外の継続状態は無効',source:'宮部継潤'}
+];
+
+const SYNERGIES = [
+  { ids:[2,19],   name:'🔥 炎の連鎖',     desc:'火属性戦法を重ねることで燃焼ダメージが大幅増加！延焼が止まらなくなる。' },
+  { ids:[1,4],    name:'🐴 騎馬連撃',     desc:'騎馬系を組み合わせることで突撃力と機動力が同時に上昇！' },
+  { ids:[12,13],  name:'💪 士気高揚',     desc:'回復しながら士気も上げる、理想の支援コンボ。長期戦で輝く！' },
+  { ids:[6,7],    name:'🏹 弓矢の雨',     desc:'弓系を重ねることで遠距離制圧力が格段にアップ！近づかせない。' },
+  { ids:[16,17],  name:'🥷 忍の計',       desc:'奇襲+封印で敵の戦法を完全に封じる上忍コンボ！' },
+  { ids:[10,8],   name:'🛡️ 鉄壁の陣',   desc:'陣形+盾で物理ダメージをほぼゼロにする鉄壁防衛！' },
+  { ids:[13,1],   name:'⚡ 激励騎突',     desc:'鼓舞後に騎突を放つとダメージが大幅アップ！タイミングが命。' },
+  { ids:[17,18],  name:'💀 二重妨害',     desc:'封印+混乱で敵を完全無力化する悪魔のコンボ！' },
+  { ids:[3,5],    name:'⚔️ 歩兵猛攻',   desc:'歩兵戦法を重ねることで近接戦闘力が激増！' },
+  { ids:[11,9],   name:'🌫️ 霧中の反撃', desc:'煙幕で敵を外しながら迎撃でカウンター！守りながら削る。' },
+  { ids:[14,12],  name:'🌿 二重回復',     desc:'兵糧+治療で味方を素早く完全回復！消耗戦を制する。' },
+  { ids:[15,13],  name:'⏩ 速攻鼓舞',     desc:'伝令でCDを縮め鼓舞を連打する高速強化ループ！' },
+  { ids:[2,19,13],name:'🌋 炎の大激励',  desc:'火攻め+火矢+鼓舞の最強炎コンボ！フィールドを燃やし尽くす。' },
+  { ids:[1,4,13], name:'🏇 神速騎馬隊',  desc:'騎突+突撃+鼓舞の完全体騎馬コンボ！止められない突撃力。' },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let trackerData = lsLoad('sz_tracker');
+let notesData   = lsLoad('sz_notes');
+let rivalsData  = lsLoad('sz_rivals');
+let selTactics  = [];
+let trackerSort  = { col:'power', asc:false };
+
+// ============================================================
+// STORAGE
+// ============================================================
+function lsSave(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function lsLoad(k)    { try { return JSON.parse(localStorage.getItem(k)) || []; } catch(e){ return []; } }
+
+// ============================================================
+// UTILS
+// ============================================================
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+
+function fmtNum(n) {
+  if (!n && n !== 0) return '—';
+  return Number(n).toLocaleString('ja-JP');
+}
+
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function today() { return new Date().toLocaleDateString('ja-JP'); }
+
+// ============================================================
+// TRACKER
+// ============================================================
+function addTracker() {
+  const name = document.getElementById('t-name').value.trim();
+  if (!name) { toast('⚠️ プレイヤー名を入力してください'); return; }
+  trackerData.push({
+    id: uid(), name,
+    faction:  document.getElementById('t-faction').value.trim(),
+    troops:   parseInt(document.getElementById('t-troops').value)   || 0,
+    power:    parseInt(document.getElementById('t-power').value)    || 0,
+    generals: parseInt(document.getElementById('t-generals').value) || 0,
+    memo:     document.getElementById('t-memo').value.trim(),
+    updated:  today()
+  });
+  lsSave('sz_tracker', trackerData);
+  ['t-name','t-faction','t-troops','t-power','t-generals','t-memo'].forEach(id => document.getElementById(id).value = '');
+  renderTracker();
+  toast('✅ 追加しました！');
+}
+
+function deleteTracker(id) {
+  if (!confirm('削除しますか？')) return;
+  trackerData = trackerData.filter(r => r.id !== id);
+  lsSave('sz_tracker', trackerData);
+  renderTracker();
+}
+
+function sortBy(col) {
+  trackerSort = trackerSort.col === col
+    ? { col, asc: !trackerSort.asc }
+    : { col, asc: false };
+  renderTracker();
+}
+
+function renderTracker() {
+  const wrap  = document.getElementById('tracker-wrap');
+  const stats = document.getElementById('tracker-stats');
+
+  if (!trackerData.length) {
+    wrap.innerHTML = '<div class="empty"><div class="icon">⚔️</div><div class="msg">友達を追加してください</div></div>';
+    stats.innerHTML = '';
+    return;
+  }
+
+  const sorted = [...trackerData].sort((a,b) => {
+    const av = typeof a[trackerSort.col] === 'number' ? a[trackerSort.col] : (a[trackerSort.col]||'').localeCompare(b[trackerSort.col]||'');
+    const bv = typeof b[trackerSort.col] === 'number' ? b[trackerSort.col] : 0;
+    if (typeof a[trackerSort.col] === 'string') return trackerSort.asc ? (a[trackerSort.col]||'').localeCompare(b[trackerSort.col]||'') : (b[trackerSort.col]||'').localeCompare(a[trackerSort.col]||'');
+    return trackerSort.asc ? a[trackerSort.col] - b[trackerSort.col] : b[trackerSort.col] - a[trackerSort.col];
+  });
+
+  const maxPow   = Math.max(...trackerData.map(r => r.power), 1);
+  const totalTrp = trackerData.reduce((s,r) => s + r.troops, 0);
+  const avgPow   = Math.round(trackerData.reduce((s,r) => s + r.power, 0) / trackerData.length);
+
+  stats.innerHTML = `
+    <div class="stat-chip">人数: <span>${trackerData.length}</span></div>
+    <div class="stat-chip">兵力合計: <span>${fmtNum(totalTrp)}</span></div>
+    <div class="stat-chip">平均戦力: <span>${fmtNum(avgPow)}</span></div>
+  `;
+
+  const ar = col => trackerSort.col === col ? (trackerSort.asc ? ' ↑' : ' ↓') : '';
+
+  let html = `<table class="tracker-table"><thead><tr>
+    <th style="width:36px">#</th>
+    <th onclick="sortBy('name')">名前${ar('name')}</th>
+    <th onclick="sortBy('faction')">大名家${ar('faction')}</th>
+    <th onclick="sortBy('troops')">兵力${ar('troops')}</th>
+    <th onclick="sortBy('power')">戦力${ar('power')}</th>
+    <th onclick="sortBy('generals')">武将${ar('generals')}</th>
+    <th>メモ</th>
+    <th style="width:60px">操作</th>
+  </tr></thead><tbody>`;
+
+  sorted.forEach((r, i) => {
+    const pct   = Math.round((r.power / maxPow) * 100);
+    const badge = i === 0 ? '<span class="rank-badge">👑 首位</span>' : '';
+    html += `<tr>
+      <td style="color:var(--text2);font-size:0.8rem">${i+1}</td>
+      <td><strong${i===0?' class="rank-1"':''}>${esc(r.name)}</strong>${badge}</td>
+      <td style="color:var(--text2)">${esc(r.faction)||'—'}</td>
+      <td>${fmtNum(r.troops)}</td>
+      <td>
+        ${fmtNum(r.power)}
+        <div class="power-bar"><div class="power-bar-fill" style="width:${pct}%"></div></div>
+      </td>
+      <td>${r.generals||'—'}</td>
+      <td style="color:var(--text2);font-size:0.79rem">${esc(r.memo)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteTracker('${r.id}')">削除</button></td>
+    </tr>`;
+  });
+
+  wrap.innerHTML = html + '</tbody></table>';
+}
+
+// ============================================================
+// NOTES
+// ============================================================
+function addNote() {
+  const title = document.getElementById('n-title').value.trim();
+  if (!title) { toast('⚠️ タイトルを入力してください'); return; }
+  notesData.unshift({
+    id: uid(),
+    title,
+    cat:   document.getElementById('n-cat').value,
+    body:  document.getElementById('n-body').value,
+    date:  today()
+  });
+  lsSave('sz_notes', notesData);
+  document.getElementById('n-title').value = '';
+  document.getElementById('n-body').value  = '';
+  renderNotes();
+  toast('✅ メモを保存しました');
+}
+
+function deleteNote(id) {
+  if (!confirm('削除しますか？')) return;
+  notesData = notesData.filter(n => n.id !== id);
+  lsSave('sz_notes', notesData);
+  renderNotes();
+}
+
+function renderNotes() {
+  const grid = document.getElementById('notes-grid');
+  const q    = document.getElementById('note-search').value.toLowerCase();
+  const list = notesData.filter(n =>
+    !q || n.title.toLowerCase().includes(q) || (n.body||'').toLowerCase().includes(q) || n.cat.includes(q)
+  );
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">📝</div><div class="msg">${q ? '該当するメモがありません' : 'メモを追加してください'}</div></div>`;
+    return;
+  }
+  grid.innerHTML = list.map(n => `
+    <div class="note-card cat-${esc(n.cat)}">
+      <div class="note-title">${esc(n.title)}</div>
+      <div class="note-body">${esc(n.body)}</div>
+      <div class="note-footer">
+        <div>
+          <span class="cat-tag">${esc(n.cat)}</span>
+          <span style="font-size:0.7rem;color:var(--text2);margin-left:8px">${n.date}</span>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteNote('${n.id}')">削除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// SIMULATOR
+// ============================================================
+let simTypeFilter = '全て';
+let simKindFilter = '全て';
+let simRankFilter = '全て';
+
+function setTypeFilter(v, btn) {
+  simTypeFilter = v;
+  document.querySelectorAll('#tab-simulator .type-filter:nth-of-type(2) .type-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTactics();
+}
+function setKindFilter(v, btn) {
+  simKindFilter = v;
+  document.querySelectorAll('#tab-simulator .type-filter:nth-of-type(3) .type-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTactics();
+}
+function setRankFilter(v, btn) {
+  simRankFilter = v;
+  document.querySelectorAll('#tab-simulator .type-filter:nth-of-type(1) .type-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTactics();
+}
+
+function toggleTactic(id) {
+  const idx = selTactics.indexOf(id);
+  if (idx >= 0) {
+    selTactics.splice(idx, 1);
+  } else {
+    if (selTactics.length >= 4) { toast('⚠️ 最大4つまで選択できます'); return; }
+    selTactics.push(id);
+  }
+  renderTactics();
+  renderSelSlot();
+}
+
+function renderTactics() {
+  const grid = document.getElementById('tactic-grid');
+  const cntEl = document.getElementById('sim-count');
+  const q = (document.getElementById('sim-search').value || '').toLowerCase();
+  let list = TACTICS;
+  if (simTypeFilter !== '全て') list = list.filter(t => t.type === simTypeFilter);
+  if (simKindFilter !== '全て') list = list.filter(t => t.kind === simKindFilter);
+  if (simRankFilter !== '全て') list = list.filter(t => t.rank === simRankFilter);
+  if (q) list = list.filter(t =>
+    t.name.toLowerCase().includes(q) ||
+    t.effect.toLowerCase().includes(q) ||
+    (t.source||'').toLowerCase().includes(q)
+  );
+
+  cntEl.textContent = `${list.length}件表示中`;
+
+  const rankCls = r => r === 'SS' ? 'rank-SS' : r === 'S' ? 'rank-S' : r === 'A' ? 'rank-A' : r === 'B' ? 'rank-B' : 'rank-C';
+  const kindIcon = k => ({能動:'⚔️',受動:'🛡️',指揮:'📣',突撃:'💨',兵種:'🐴'}[k]||'');
+  const typeColor = tp => ({固有:'#e8a020',伝授:'#4090d0',事件:'#50a870'}[tp]||'var(--text2)');
+  const srcIcon = tp => ({固有:'👑',伝授:'📖',事件:'⚡'}[tp]||'');
+
+  grid.innerHTML = list.map(t => {
+    const si  = selTactics.indexOf(t.id);
+    const sel = si >= 0;
+    const colors = ['var(--gold)','var(--red)','#4090c0','#50a870'];
+    return `<div class="tactic-card${sel ? ' selected' : ''}" onclick="toggleTactic(${t.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">
+        <div class="tactic-name" style="font-size:0.85rem">${esc(t.name)}</div>
+        <span class="${rankCls(t.rank)}" style="font-size:0.75rem;white-space:nowrap">${t.rank}</span>
+      </div>
+      <div style="margin-top:3px">
+        <span style="font-size:0.67rem;color:${typeColor(t.type)}">${srcIcon(t.type)}${t.type}</span>
+        <span class="kind-badge">${kindIcon(t.kind)}${t.kind}</span>
+      </div>
+      ${t.source ? `<div style="font-size:0.68rem;color:var(--gold);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(t.source)}">🧑‍💼 ${esc(t.source)}</div>` : ''}
+      <div class="tactic-effect-label" style="margin-top:4px;font-size:0.68rem">${esc(t.effect)}</div>
+      <div style="font-size:0.66rem;color:var(--text2);margin-top:3px">発動確率：${t.prob}</div>
+      ${sel ? `<div style="font-size:0.68rem;margin-top:4px;color:${colors[si]};display:flex;justify-content:space-between;align-items:center"><span>✓ ${si+1}番目に選択</span><span style="background:rgba(255,255,255,0.15);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:0.7rem">✕</span></div>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty" style="grid-column:1/-1"><div class="icon">⚔️</div><div class="msg">該当する戦法がありません</div></div>';
+}
+
+function renderSelSlot() {
+  const el = document.getElementById('selected-slot');
+  const colors = ['var(--gold)','var(--red)','#4090c0','#50a870'];
+  if (!selTactics.length) {
+    el.innerHTML = '<span style="color:var(--text2);font-size:0.8rem">戦法を選んでください</span>';
+    return;
+  }
+  el.innerHTML = selTactics.map((id, i) => {
+    const t = TACTICS.find(x => x.id === id);
+    return `<span class="slot-tag" style="background:rgba(0,0,0,0.35);border:1px solid ${colors[i]};color:${colors[i]}" onclick="toggleTactic(${id})">
+      ${esc(t.name)} ✕
+    </span>`;
+  }).join('');
+}
+
+// ============================================================
+// RIVALS
+// ============================================================
+function addRival() {
+  const name = document.getElementById('r-name').value.trim();
+  if (!name) { toast('⚠️ 名前を入力してください'); return; }
+
+  const file = document.getElementById('r-img').files[0];
+  const finish = (imgData) => {
+    rivalsData.unshift({
+      id:     uid(),
+      name,
+      threat: document.getElementById('r-threat').value,
+      troops: document.getElementById('r-troops').value.trim(),
+      tactic: document.getElementById('r-tactic').value.trim(),
+      memo:   document.getElementById('r-memo').value.trim(),
+      image:  imgData || null,
+      date:   today()
+    });
+    lsSave('sz_rivals', rivalsData);
+    ['r-name','r-troops','r-tactic','r-memo'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('r-img').value = '';
+    renderRivals();
+    toast('✅ ライバルを登録しました！');
+  };
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => finish(e.target.result);
+    reader.readAsDataURL(file);
+  } else {
+    finish(null);
+  }
+}
+
+function deleteRival(id) {
+  if (!confirm('削除しますか？')) return;
+  rivalsData = rivalsData.filter(r => r.id !== id);
+  lsSave('sz_rivals', rivalsData);
+  renderRivals();
+}
+
+function renderRivals() {
+  const grid = document.getElementById('rivals-grid');
+  const q    = document.getElementById('rival-search').value.toLowerCase();
+  const list = rivalsData.filter(r =>
+    !q ||
+    r.name.toLowerCase().includes(q) ||
+    (r.tactic||'').toLowerCase().includes(q) ||
+    (r.memo||'').toLowerCase().includes(q)
+  );
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">🔍</div><div class="msg">${q ? '該当するライバルがいません' : 'ライバルを追加してください'}</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(r => `
+    <div class="rival-card">
+      ${r.image
+        ? `<div class="rival-thumb"><img src="${r.image}" alt="${esc(r.name)}"></div>`
+        : `<div class="rival-thumb">⚔️</div>`
+      }
+      <span class="threat-badge threat-${esc(r.threat)}">脅威：${esc(r.threat)}</span>
+      <div class="rival-info">
+        <div class="rival-name">${esc(r.name)}</div>
+        <div class="rival-stat">
+          ${r.troops ? `兵力：${esc(r.troops)}<br>` : ''}
+          ${r.tactic ? `戦法：${esc(r.tactic)}<br>` : ''}
+          ${r.memo   ? `<span style="color:var(--text2)">${esc(r.memo)}</span>` : ''}
+        </div>
+        <div class="rival-actions">
+          <button class="btn btn-danger btn-sm" onclick="deleteRival('${r.id}')">削除</button>
+          <span style="font-size:0.69rem;color:var(--text2)">${r.date}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+renderTracker();
+renderNotes();
+renderTactics();
+renderSelSlot();
+renderRivals();
+</script>
+</body>
+</html>

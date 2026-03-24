@@ -44,3 +44,5 @@ next-env.d.ts
 debug_*.json
 build_log.txt
 check_*.mjs
+
+.vercel
