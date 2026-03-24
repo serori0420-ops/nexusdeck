@@ -25,12 +25,12 @@ export function AiHighlightsColumn() {
             <div className="px-3 py-2.5 flex items-center justify-between shrink-0 border-b border-border/40">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                        <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                        <h2 className="text-sm font-semibold tracking-tight bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                        <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <h2 className="text-sm font-semibold tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
                             AI Highlights
                         </h2>
                     </div>
-                    <span className="text-[10px] font-medium text-muted-foreground bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-md tabular-nums shrink-0">
+                    <span className="text-[10px] font-medium text-amber-700 dark:text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-md tabular-nums shrink-0">
                         {scoutArticles.length}
                     </span>
                 </div>
@@ -46,9 +46,9 @@ export function AiHighlightsColumn() {
                         <div key={article.id} className="relative">
                             {/* Scout Agent の要約をカード上部に表示 */}
                             {article.summary && (
-                                <div className="mb-1.5 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                                    <p className="text-[11px] leading-relaxed text-amber-200/80">
-                                        <Sparkles className="h-3 w-3 inline mr-1 text-amber-400/60" />
+                                <div className="mb-1.5 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                                    <p className="text-[11px] leading-relaxed text-amber-900 dark:text-amber-200/90 font-medium whitespace-pre-wrap">
+                                        <Sparkles className="h-3 w-3 inline mr-1 text-amber-600 dark:text-amber-400/80 -mt-0.5" />
                                         {article.summary}
                                     </p>
                                 </div>
