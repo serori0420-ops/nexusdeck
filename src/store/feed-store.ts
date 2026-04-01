@@ -80,38 +80,70 @@ export const PRESET_SOURCES = [
     },
     // 国内 Gov / Policy
     {
+        id: 'preset-kantei',
+        title: '内閣府・官邸',
+        description: '政府方針、骨太の方針、官邸主導のAI・成長戦略',
+        sourceName: 'Gov',
+        url: buildGoogleNewsRssUrl('首相官邸 OR 内閣府 OR 政府AI戦略 OR 骨太の方針'),
+        category: '政府・政策'
+    },
+    {
         id: 'preset-digital-agency',
         title: 'デジタル庁',
-        description: '行政DX、マイナンバー、データ戦略など',
+        description: 'ガバメントクラウド、マイナンバー、行政デジタル化',
         sourceName: 'Gov',
-        url: buildGoogleNewsRssUrl('デジタル庁 OR 行政DX'),
+        url: buildGoogleNewsRssUrl('デジタル庁 OR ガバメントクラウド OR マイナンバーカード OR 行政デジタル化'),
         category: '政府・政策'
     },
     {
         id: 'preset-keisansho',
         title: '経済産業省',
-        description: 'デジタル政策、半導体戦略、スタートアップ支援',
+        description: '半導体戦略、GX、スタートアップ支援、産業DX',
         sourceName: 'Gov',
-        url: buildGoogleNewsRssUrl('経済産業省 OR デジタル政策 OR 半導体戦略'),
+        url: buildGoogleNewsRssUrl('経済産業省 OR 半導体戦略 OR GX OR スタートアップ支援 OR 産業DX'),
         category: '政府・政策'
     },
     {
         id: 'preset-soumu',
         title: '総務省',
-        description: '情報通信政策、5G/6G配置、サイバーセキュリティ',
+        description: '情報通信政策、5G/6G、サイバーセキュリティ',
         sourceName: 'Gov',
-        url: buildGoogleNewsRssUrl('総務省 OR 情報通信政策'),
+        url: buildGoogleNewsRssUrl('総務省 OR 情報通信政策 OR 5G OR 6G OR サイバーセキュリティ'),
         category: '政府・政策'
     },
     {
         id: 'preset-ai-policy',
-        title: 'AI規制・ガバナンス',
-        description: 'AIガイドライン、著作権、国際的な規制動向',
+        title: 'AI規制・ガバナンス（国内）',
+        description: 'AIガイドライン、生成AI規制、AI基本法の動向',
         sourceName: 'Policy',
-        url: buildGoogleNewsRssUrl('AI規制 OR AIガバナンス OR AIガイドライン'),
+        url: buildGoogleNewsRssUrl('AI規制 OR AIガバナンス OR 生成AI規制 OR AI基本法'),
+        category: '政府・政策'
+    },
+    {
+        id: 'preset-intl-digital-policy',
+        title: '国際デジタル政策',
+        description: 'EU AI法、米国AI規制、G7・OECDのデジタル戦略',
+        sourceName: 'Policy',
+        url: buildGoogleNewsRssUrl('EU AI法 OR EU AI Act OR 米国AI規制 OR G7 AI OR OECD デジタル'),
+        category: '政府・政策'
+    },
+    {
+        id: 'preset-gov-ai-cases',
+        title: '行政AI活用事例',
+        description: '自治体・省庁のAI導入事例、公共サービスへのAI活用',
+        sourceName: 'Gov',
+        url: buildGoogleNewsRssUrl('行政 AI活用 OR 自治体 AI導入 OR 公共サービス AI OR 行政DX AI事例'),
         category: '政府・政策'
     },
     // トピック (Google News)
+    {
+        id: 'preset-topic-data-utilization',
+        title: 'データ利活用事例',
+        description: '行政・民間を問わず、データ活用・連携・オープンデータの事例',
+        sourceName: 'Topic',
+        url: buildGoogleNewsRssUrl('データ利活用 OR データ活用事例 OR オープンデータ OR データ連携基盤 OR データ駆動'),
+        category: 'トピック'
+    },
     {
         id: 'preset-topic-ai',
         title: 'AI / 人工知能',
@@ -151,6 +183,14 @@ export const PRESET_SOURCES = [
         description: 'アマゾン ウェブ サービス ジャパン 公式ブログ',
         sourceName: 'AWS',
         url: 'https://aws.amazon.com/jp/blogs/news/feed/',
+        category: '企業ブログ'
+    },
+    {
+        id: 'preset-anthropic-blog',
+        title: 'Anthropic Blog',
+        description: 'Anthropic の研究・製品・会社ニュース（公式ブログ）',
+        sourceName: 'Anthropic',
+        url: '/api/anthropic-blog',
         category: '企業ブログ'
     },
     // GitHub Trending
